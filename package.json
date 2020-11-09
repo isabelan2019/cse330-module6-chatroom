@@ -1,0 +1,22 @@
+{
+  "name": "module6-group-module6-458267-456941",
+  "version": "1.0.0",
+  "description": "458267 456941",
+  "main": "chat-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://claire-i@github.com/cse330-fall-2020/module6-group-module6-458267-456941.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cse330-fall-2020/module6-group-module6-458267-456941/issues"
+  },
+  "homepage": "https://github.com/cse330-fall-2020/module6-group-module6-458267-456941#readme",
+  "dependencies": {
+    "socket.io": "^3.0.1"
+  }
+}
