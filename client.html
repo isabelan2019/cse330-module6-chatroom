@@ -12,15 +12,24 @@
       });
 
       function sendMessage(){
+         const nickname=document.getElementById("nickname").value;
          var msg = document.getElementById("message_input").value;
-         socketio.emit("message_to_server", {message:msg});
+         socketio.emit("message_to_server", {message: nickname + " : " + msg});
       }
 
       </script>
    </head>
    <body>
-      <input type=text" id="message_input"/>
-      <button onclick="sendMessage()">send</button>
+      <!-- <div id="create-chat">
+         <input type="text" id="chatroom_name">
+         <button onclick="createRoom()">Create Room</button>
+      </div> -->
+      <div id="create-nickname">
+         <input type="text" id="nickname">
+         <button onclick="signOn()">Sign On</button>
+      </div>
+      <input type="text" id="message_input"/>
+      <button onclick="sendMessage()">Send</button>
       <div id="chatlog"></div>
    </body>
 </html>
