@@ -5,32 +5,60 @@
       <script type ="text/javascript">
 
       var socketio = io.connect();
+
+      
       socketio.on("message_to_client",function(data) {
-         //Append an HR thematic break and the escaped HTML of the new message
-         document.getElementById("chatlog").appendChild(document.createElement("hr"));
-         document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));
+        //Append an HR thematic break and the escaped HTML of the new message
+        document.getElementById("chatlog").appendChild(document.createElement("hr"));
+        document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));
       });
 
       function sendMessage(){
-         const nickname=document.getElementById("nickname").value;
-         var msg = document.getElementById("message_input").value;
-         socketio.emit("message_to_server", {message: nickname + " : " + msg});
+        var msg = document.getElementById("message_input").value;
+        socketio.emit("message_to_server", {message: msg});
       }
 
+      
+      function addUser(){
+        const nickname = document.getElementById("nickname").value;
+        socketio.emit("nickname", {user: nickname});
+        socketio.on("show_users",function(data){
+            document.getElementById("list-Users").appendChild(document.createElement("br"));
+            document.getElementById("list-Users").textContent=JSON.stringify(data["usersArray"]);
+        });
+        document.getElementById("nickname").value="";
+      }
+
+      function createRoom(){
+          const roomName = document.getElementById("chatroom_name");
+          const roomPassword=document.getElementById("chatroom_password");
+          socketio.emit("room_name",{room_name: roomName, password: password});
+          socketio.on("show_rooms",function(data){
+            document.getElementById("list-Rooms").appendChild(document.createElement("br"));
+            let chatroomButton = document.createElement("button");
+            let chatroomName=document.createTextNode(JSON.stringify(data["roomsArray"]));
+            chatroomButton.appendChild(chatroomName);
+            chatroomButton.id=JSON.stringify(data["roomsArray"]);
+            document.getElementById("list-Rooms").appendChild(chatroomButton);
+
+          })
+      }
       </script>
    </head>
    <body>
-      <!-- <div id="create-chat">
-         <input type="text" id="chatroom_name">
-         <button onclick="createRoom()">Create Room</button>
-      </div> -->
-      <div id="create-nickname">
-         <input type="text" id="nickname">
-         <button onclick="signOn()">Sign On</button>
+      <div id="create-chat">
+        <input type="text" id="chatroom_name">
+        <input type="password" id="chatroom_password">
+        <button onclick="createRoom()">Create Room</button>
       </div>
+      <div id="list-Rooms"></div>
+      <div id="create-nickname">
+        <input type="text" id="nickname">
+        <button onclick="addUser()">Sign On</button>
+      </div>
+      <div id="list-Users"></div>
+      <div id="chatlog"></div>
       <input type="text" id="message_input"/>
       <button onclick="sendMessage()">Send</button>
-
-      <div id="chatlog"></div>
    </body>
 </html>
