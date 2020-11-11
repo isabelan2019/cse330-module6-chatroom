@@ -5,7 +5,7 @@
       <script type ="text/javascript">
 
       var socketio = io.connect();
-
+    
       
       socketio.on("message_to_client",function(data) {
         //Append an HR thematic break and the escaped HTML of the new message
@@ -22,37 +22,60 @@
       function addUser(){
         const nickname = document.getElementById("nickname").value;
         socketio.emit("nickname", {user: nickname});
-        socketio.on("show_users",function(data){
-            document.getElementById("list-Users").appendChild(document.createElement("br"));
-            document.getElementById("list-Users").textContent=JSON.stringify(data["usersArray"]);
-        });
         document.getElementById("nickname").value="";
       }
 
       function createRoom(){
-          const roomName = document.getElementById("chatroom_name");
-          const roomPassword=document.getElementById("chatroom_password");
-          socketio.emit("room_name",{room_name: roomName, password: password});
-          socketio.on("show_rooms",function(data){
-            document.getElementById("list-Rooms").appendChild(document.createElement("br"));
-            let chatroomButton = document.createElement("button");
-            let chatroomName=document.createTextNode(JSON.stringify(data["roomsArray"]));
-            chatroomButton.appendChild(chatroomName);
-            chatroomButton.id=JSON.stringify(data["roomsArray"]);
-            document.getElementById("list-Rooms").appendChild(chatroomButton);
-
+        event.preventDefault();
+          const roomName = document.getElementById("chatroom_name").value;
+          console.log(roomName);
+          //const roomPassword=document.getElementById("chatroom_password");
+          //sends to server room name and password
+          socketio.emit("room_name",{room_name: roomName});
+          //hears from server if their room was succesfully created 
+          socketio.on("success",function(data){
+              if(data["success"]==true){
+                  alert("Your room has been successfully created.")
+              }
           })
+      }
+
+        //hears from server all the room names available
+        socketio.on("show_rooms",function(data){
+        document.getElementById("list-Rooms").appendChild(document.createElement("br"));
+        let chatroomButton = document.createElement("button");
+        let chatroomName=document.createTextNode(data["roomsArray"][data["index"]-1].roomName);
+        chatroomButton.appendChild(chatroomName);
+        chatroomButton.id=data["roomsArray"][data["index"]-1].roomName;
+        chatroomButton.setAttribute('class', 'open-chatroom')
+        document.getElementById("list-Rooms").appendChild(chatroomButton);
+        //add event listeners to open a chatroom if the chatroom button is clicked
+        document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
+        })
+
+      function openChatRoom(event){
+          console.log(event.target.id);
+        //show all users in the chatroom
+        socketio.on("show_users",function(data){
+            document.getElementById("list-Users").appendChild(document.createElement("br"));
+            document.getElementById("list-Users").appendChild(document.createTextNode(data["usersArray"].nickname[0]));
+        });
+        //when a button is clicked, send the name of the room
+        socketio.emit("joined_room",{room_name:event.target.id});
       }
       </script>
    </head>
    <body>
       <div id="create-chat">
+        <label for="chatroom_name">New Chat Room Name: </label>
         <input type="text" id="chatroom_name">
-        <input type="password" id="chatroom_password">
+        <!-- <label for="chatroom_password">New Chat Room Password: </label>
+        <input type="password" id="chatroom_password"> -->
         <button onclick="createRoom()">Create Room</button>
       </div>
       <div id="list-Rooms"></div>
       <div id="create-nickname">
+        <label for="nickanem">What's your nickname? </label>
         <input type="text" id="nickname">
         <button onclick="addUser()">Sign On</button>
       </div>

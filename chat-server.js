@@ -17,8 +17,9 @@ const server = http.createServer(function (req, res) {
     });
 });
 server.listen(port);
-
+//initialize Array of all users online
 let users_online = new Array();
+//initialize Array of all chatrooms available
 let chatrooms = new Array();
 // Import Socket.IO and pass our HTTP server object to it.
 const socketio = require("socket.io")(server);
@@ -32,6 +33,9 @@ io.sockets.on("connection", function (socket) {
     // This callback runs when the server receives a new message from the client.
     socket.on('message_to_server', function (data) {
         console.log(socket.id);
+        //there should only be one room that socket is in so return that one value from set
+        const roomNow=socket.rooms;
+        console.log(roomNow);
         let socket_nickname=null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
@@ -49,9 +53,8 @@ io.sockets.on("connection", function (socket) {
         if(users_online.includes(userObject)==false){
             users_online.push(userObject);
         }
-        for(let i in users_online){
-            io.sockets.emit("show_users", {usersArray:users_online[i].nickname})
-        }
+            io.sockets.emit("show_users", {usersArray:users_online})
+    
         console.log(users_online);
     });
     // If a client disconnects, removes from users_online array
@@ -65,8 +68,32 @@ io.sockets.on("connection", function (socket) {
    
     //This callback runs when the server receives a new chatroom name
     socket.on('room_name', function(data){
-        const roomObject={roomName: data["roomName"],password:data["password"],usersInRoom:null};
-        io.sockets.emit("show_rooms",{roomsArray:chatrooms});
+        //create chatroom JSON object 
+        const roomObject={roomName: data["room_name"],creator:socket.id,usersInRoomSet:null};
+        console.log(roomObject); 
+        chatrooms.push(roomObject);
+        io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
+        console.log(chatrooms);
+        socket.emit("success",{success:true});
+        //join creator to the given room
+        socket.join(data["room_name"]);
+
     })
-    
+   
+    //This callback runs whenever a user joins the new chatroom
+    socket.on('joined_room', function(data){
+        console.log(data["room_name"]);
+        //join socket to the given room 
+        socket.join(data["room_name"]);
+        //update array of clients in a room
+        const usersInRoom=io.in(data["room_name"]).allSockets();
+        console.log(usersInRoom);
+        for (let i in chatrooms){
+            if(chatrooms[i].roomName==data["room_name"]){
+                chatrooms[i].usersInRoomSet=usersInRoom;
+            }
+        }
+      console.log(chatrooms);
+        
+    })
 });
