@@ -32,19 +32,26 @@ io.sockets.on("connection", function (socket) {
  
     // This callback runs when the server receives a new message from the client.
     socket.on('message_to_server', function (data) {
-        console.log(socket.id);
+        // console.log(socket.id);
         //there should only be one room that socket is in so return that one value from set
-        const roomNow=socket.rooms;
-        console.log(roomNow);
+        const roomsIn=socket.rooms;
+        let iterator =socket.rooms.values();
+        let currentRoom=iterator.next().value;
+        // console.log(roomsIn);
+        // console.log(currentRoom);
+        // console.log(roomsIn);
+        // console.log(iterator);
+        // console.log(currentRoom);
+        // console.log(iterator.next().value);
         let socket_nickname=null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
                 socket_nickname=users_online[i].nickname;
             }
         }
-        console.log(socket_nickname);
+        // console.log(socket_nickname);
         console.log("message: " + data["message"]); // log it to the Node.JS output
-        io.sockets.emit("message_to_client", { message: socket_nickname + ": " + data["message"] }) // broadcast the message to other users
+        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }) // broadcast the message to other users
     });
 
     // This callback runs when the server receives a new username sign in
@@ -53,19 +60,18 @@ io.sockets.on("connection", function (socket) {
         if(users_online.includes(userObject)==false){
             users_online.push(userObject);
         }
-            io.sockets.emit("show_users", {usersArray:users_online})
-    
-        console.log(users_online);
+         console.log(users_online);
     });
-    // If a client disconnects, removes from users_online array
-    socket.on('disconnect',function(data){
-        for (let i in users_online){
-            if(users_online[i].id==socket.id){
-                users_online.splice(i,1);
-            }
-        }
-    });
+    // // If a client disconnects, removes from users_online array
+    // socket.on('disconnect',function(data){
+    //     for (let i in users_online){
+    //         if(users_online[i].id==socket.id){
+    //             users_online.splice(i,1);
+    //         }
+    //     }
+    // });
    
+    
     //This callback runs when the server receives a new chatroom name
     socket.on('room_name', function(data){
         //create chatroom JSON object 
@@ -82,7 +88,14 @@ io.sockets.on("connection", function (socket) {
    
     //This callback runs whenever a user joins the new chatroom
     socket.on('joined_room', function(data){
-        console.log(data["room_name"]);
+        const roomsIn=socket.rooms;
+        let iterator =socket.rooms.values();
+        let currentRoom=iterator.next().value;
+        // console.log(roomsIn);
+        // console.log(currentRoom);
+        // socket.leave(currentRoom);
+        // console.log(data["room_name"]);
+
         //join socket to the given room 
         socket.join(data["room_name"]);
         //update array of clients in a room
@@ -93,7 +106,14 @@ io.sockets.on("connection", function (socket) {
                 chatrooms[i].usersInRoomSet=usersInRoom;
             }
         }
-      console.log(chatrooms);
+       
+        let allUserIds=io.in(data["room_name"]).allSockets();
+        let allUserNames=Array.from(allUserIds);
+        console.log(allUserIds);
+        console.log(allUserNames);
+
+        io.in(currentRoom).emit("show_users", {usersArray:allUserNames})
+        console.log(chatrooms);
         
     })
 });
