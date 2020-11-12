@@ -38,7 +38,7 @@ io.sockets.on("connection", function (socket) {
         let iterator =socket.rooms.values();
         let currentRoom=iterator.next().value;
         // console.log(roomsIn);
-        // console.log(currentRoom);
+        console.log(currentRoom);
         // console.log(roomsIn);
         // console.log(iterator);
         // console.log(currentRoom);
@@ -49,8 +49,8 @@ io.sockets.on("connection", function (socket) {
                 socket_nickname=users_online[i].nickname;
             }
         }
-        // console.log(socket_nickname);
-        console.log("message: " + data["message"]); // log it to the Node.JS output
+        console.log(socket_nickname);
+        console.log("message: " + socket_nickname + " : " + data["message"]); // log it to the Node.JS output
         io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }) // broadcast the message to other users
     });
 
@@ -91,29 +91,41 @@ io.sockets.on("connection", function (socket) {
         const roomsIn=socket.rooms;
         let iterator =socket.rooms.values();
         let currentRoom=iterator.next().value;
+        socket.leave(currentRoom);
+        for (let i in users_online){
+            if(socket.id==usersOnline[i].id){
+                users_online.inRoom=null;
+            }
+        }
         // console.log(roomsIn);
         // console.log(currentRoom);
-        // socket.leave(currentRoom);
         // console.log(data["room_name"]);
 
         //join socket to the given room 
         socket.join(data["room_name"]);
-        //update array of clients in a room
-        const usersInRoom=io.in(data["room_name"]).allSockets();
-        console.log(usersInRoom);
-        for (let i in chatrooms){
-            if(chatrooms[i].roomName==data["room_name"]){
-                chatrooms[i].usersInRoomSet=usersInRoom;
+        for (let i in users_online){
+            if(socket.id==usersOnline[i].id){
+                users_online.inRoom=data["room_name"];
             }
         }
-       
-        let allUserIds=io.in(data["room_name"]).allSockets();
-        let allUserNames=Array.from(allUserIds);
-        console.log(allUserIds);
-        console.log(allUserNames);
+        //update array of clients in a room
+        //const usersInRoom=io.in(data["room_name"]).allSockets();
+        //console.log(usersInRoom);
+        // for (let i in chatrooms){
+        //     if(chatrooms[i].roomName==data["room_name"]){
+        //         chatrooms[i].usersInRoomSet=usersInRoom;
+        //     }
+        // }
+       let usersInThisRoom = new Array();
+       for (let i in users_online){
+        if(usersOnline[i].inRoom==data["room_name"]){
+            usersInThisRoom.push(usersOnline[i].nickname);
+            }
+        }
+        console.log(usersInThisRoom);
 
-        io.in(currentRoom).emit("show_users", {usersArray:allUserNames})
-        console.log(chatrooms);
+        io.in(currentRoom).emit("show_users", {usersArray:usersInThisRoom})
         
     })
+   
 });
