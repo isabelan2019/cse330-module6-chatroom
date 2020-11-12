@@ -56,7 +56,7 @@ io.sockets.on("connection", function (socket) {
 
     // This callback runs when the server receives a new username sign in
     socket.on('nickname',function(data){
-        const userObject = {nickname: data["user"],id: socket.id};
+        const userObject = {nickname: data["user"],id: socket.id,inRoom:socket.id};
         if(users_online.includes(userObject)==false){
             users_online.push(userObject);
         }
@@ -75,7 +75,7 @@ io.sockets.on("connection", function (socket) {
     //This callback runs when the server receives a new chatroom name
     socket.on('room_name', function(data){
         //create chatroom JSON object 
-        const roomObject={roomName: data["room_name"],creator:socket.id,usersInRoomSet:null};
+        const roomObject={roomName: data["room_name"],creator:socket.id,usersInRoom:null};
         console.log(roomObject); 
         chatrooms.push(roomObject);
         io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
@@ -93,7 +93,7 @@ io.sockets.on("connection", function (socket) {
         let currentRoom=iterator.next().value;
         socket.leave(currentRoom);
         for (let i in users_online){
-            if(socket.id==usersOnline[i].id){
+            if(socket.id==usersOnline[i].id && users_online.inRoom==socket.id){
                 users_online.inRoom=null;
             }
         }
@@ -122,7 +122,12 @@ io.sockets.on("connection", function (socket) {
             usersInThisRoom.push(usersOnline[i].nickname);
             }
         }
-        console.log(usersInThisRoom);
+        for (let i in chatrooms){
+            if(chatrooms[i].roomName==data["room_name"]){
+                chatrooms[i].usersInRoom=usersInThisRoom;
+            }
+        }
+        
 
         io.in(currentRoom).emit("show_users", {usersArray:usersInThisRoom})
         
