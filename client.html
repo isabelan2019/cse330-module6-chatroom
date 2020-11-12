@@ -54,11 +54,12 @@
         })
 
       function openChatRoom(event){
-          console.log(event.target.id);
+        console.log(event.target.id);
         //show all users in the chatroom
         socketio.on("show_users",function(data){
-            document.getElementById("list-Users").appendChild(document.createElement("br"));
-            document.getElementById("list-Users").appendChild(document.createTextNode(data["usersArray"].nickname[0]));
+        document.getElementById("list-Users").appendChild(document.createElement("br"));
+        
+        // document.getElementById("list-Users").appendChild(document.createTextNode(data["usersArray"].nickname[0]));
         });
         //when a button is clicked, send the name of the room
         socketio.emit("joined_room",{room_name:event.target.id});
