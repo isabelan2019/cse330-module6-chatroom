@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
    <head>
+      <script type="text/css" rel="stylesheet" href="/css/chat.css"></script>
       <script src="/socket.io/socket.io.js"></script>
       <script type ="text/javascript">
 
@@ -35,21 +36,31 @@
           //hears from server if their room was succesfully created 
           
       }
+      function createPrivateRoom(){
+        event.preventDefault();
+          const roomName = document.getElementById("chatroom_name").value;
+          console.log(roomName);
+          const roomPassword=document.getElementById("chatroom_password");
+          //sends to server room name and password
+          socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
+          //hears from server if their room was succesfully created 
+          
+      }
       socketio.on("success",function(data){
               if(data["success"]==true){
-                  alert("action successful")
+                  alert("action successful");
               }
-          })
+          });
 
         //hears from server all the room names available
         socketio.on("show_rooms",function(data){
-          document.getElementById("list-Rooms").appendChild(document.createElement("br"));
+          document.getElementById("join-Rooms").appendChild(document.createElement("br"));
           let chatroomButton = document.createElement("button");
           let chatroomName=document.createTextNode(data["roomsArray"][data["index"]-1].roomName);
           chatroomButton.appendChild(chatroomName);
           chatroomButton.id=data["roomsArray"][data["index"]-1].roomName;
           chatroomButton.setAttribute('class', 'open-chatroom')
-          document.getElementById("list-Rooms").appendChild(chatroomButton);
+          document.getElementById("join-Rooms").appendChild(chatroomButton);
           //add event listeners to open a chatroom if the chatroom button is clicked
           document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
         })
@@ -61,42 +72,98 @@
       }
       //show all users in the chatroom
       socketio.on("show_users",function(data){
-          showusers(data["usersArray"]);
+        showusers(data["usersArray"]);
         });
 
       function showusers(data) {
         document.getElementById("list-Users").innerHTML=" ";
         //shows users in the room when joined 
         //(should be called when a host makes and when someone joins)
-        // console.log(data);
-        let usertext = " ";
+        console.log(data);
+        let usertext = "users ";
         for (i in data) {
           usertext = usertext + data[i]+ ", ";
         }
-        usertext = usertext + " are in the chatroom";
+        usertext = usertext + " in the chatroom";
         document.getElementById("list-Users").appendChild(document.createElement("br"));
         document.getElementById("list-Users").appendChild(document.createTextNode(usertext));
         
       }
+      //show chatroom details 
+      socketio.on("in_chatroom",function(data){
+        console.log(data);
+        document.getElementById("room-creator").innerText = "Created by "+ data["creator"];
+        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
+
+        });
+
+      //creator privileges
+      socketio.on("creator_privileges",function(data){
+        console.log(data);
+        if(data["iscreator"]==true){
+          alert("you are the creator");
+          let kickoutButton = document.createElement("button");
+          let banButton = document.createElement("button");          
+          kickoutButton.innerText = "kick out";
+          banButton.innerText ="ban";
+          //need to add event listeners 
+        }
+        //this should only be called for the user of the chatroom
+
+      });
+
       </script>
    </head>
    <body>
-      <div id="create-chat">
-        <label for="chatroom_name">New Chat Room Name: </label>
-        <input type="text" id="chatroom_name">
-        <!-- <label for="chatroom_password">New Chat Room Password: </label>
-        <input type="password" id="chatroom_password"> -->
-        <button onclick="createRoom()">Create Room</button>
-      </div>
-      <div id="list-Rooms"></div>
       <div id="create-nickname">
         <label for="nickanem">What's your nickname? </label>
         <input type="text" id="nickname">
         <button onclick="addUser()">Sign On</button>
       </div>
-      <div id="list-Users"></div>
-      <div id="chatlog"></div>
-      <input type="text" id="message_input"/>
-      <button onclick="sendMessage()">Send</button>
+      <div id="create-chat">
+        <div id="createroom">
+          <p>Create Chat Room</p>
+          <label for="chatroom_name">New Chat Room Name: </label>
+          <input type="text" id="chatroom_name">
+          <!-- <label for="chatroom_password">New Chat Room Password: </label>
+          <input type="password" id="chatroom_password"> -->
+          <button onclick="createRoom()">Create Room</button>
+        </div>
+        <div id="createprivateroom">
+          <p>Create Private Chat Room</p>
+          <label for="private_name">New Chat Room Name: </label>
+          <input type="text" id="private_name">
+          <label for="private_password">New Chat Room Password: </label>
+          <input type="password" id="private_password">
+          <button onclick="createPrivateRoom()">Create Private Room</button>
+        </div>
+
+      </div>
+
+
+      <div id="join-Rooms">
+        <p>Open Chat Rooms</p>
+        
+      </div>
+    
+      <div id="in-room">
+        <h1 id="room-name"></h1>
+        <p id="room-creator"></p>
+
+        <div id="chatlog">
+
+        </div>
+
+        <div id="send-message">
+          <input type="text" id="message_input"/>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+        
+
+        <div id="list-Users">
+
+       </div>
+    </div>
+
    </body>
 </html>

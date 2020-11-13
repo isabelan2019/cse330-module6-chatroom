@@ -23,7 +23,9 @@ let users_online = new Array();
 //initialize Array of all chatrooms available
 let chatrooms = new Array();
 // Import Socket.IO and pass our HTTP server object to it.
-const socketio = require("socket.io")(server);
+const socketio = require("socket.io")(server, {
+    wsEngine: 'ws'
+});
 
 // Attach our Socket.IO server to our HTTP server to listen
 const io = socketio.listen(server);
@@ -83,6 +85,8 @@ io.sockets.on("connection", function (socket) {
         io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
         
         socket.emit("success",{success:true});
+
+
         //join creator to the given room
         socket.join(data["room_name"]);
 
@@ -106,6 +110,11 @@ io.sockets.on("connection", function (socket) {
         console.log(chatrooms);
         io.in(currentRoom).emit("show_users", {usersArray:hostinroom})
 
+        //give chatroom info
+        io.in(currentRoom).emit("in_chatroom", {room:currentRoom.roomName, creator:socket_nickname})
+        //creator privileges 
+        io.in(currentRoom).emit("creator_privileges", {iscreator: true})
+
 
     })
    
@@ -122,7 +131,7 @@ io.sockets.on("connection", function (socket) {
         }
         // console.log(roomsIn);
         // console.log(currentRoom);
-        console.log(data["room_name"]);
+        //console.log(data["room_name"]);
 
         //join socket to the given room 
         socket.join(data["room_name"]);
@@ -155,7 +164,19 @@ io.sockets.on("connection", function (socket) {
         }
         
 
-        io.in(currentRoom).emit("show_users", {usersArray:usersInThisRoom})
+        io.in(currentRoom).emit("show_users", {usersArray:usersInThisRoom});
+
+        //show chatroom info
+
+        //get nickname 
+        let socket_nickname=null;
+        for(let i in users_online){
+            if(users_online[i].id==socket.id){
+                socket_nickname=users_online[i].nickname;
+            }
+        };
+
+        io.in(currentRoom).emit("in_chatroom", {room:currentRoom.roomName, creator:socket_nickname})
         
     })
    
