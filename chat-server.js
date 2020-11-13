@@ -39,52 +39,53 @@ io.sockets.on("connection", function (socket) {
     socket.on('message_to_server', function (data) {
         // console.log(socket.id);
         //there should only be one room that socket is in so return that one value from set
-        const roomsIn=socket.rooms;
-        let iterator =socket.rooms.values();
-        let currentRoom=iterator.next().value;
-        // console.log(roomsIn);
-        console.log(currentRoom);
-        // console.log(roomsIn);
-        // console.log(iterator);
-        // console.log(currentRoom);
-        // console.log(iterator.next().value);
+        // const roomsIn=socket.rooms;
+        // let iterator =socket.rooms.values();
+        // let currentRoom=iterator.next().value;
+        let currentRoom=null;
+        //log the current room that message is being sent in
+        
+        //retrieve nickname from the users_online array by using the socket id
         let socket_nickname=null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
+                currentRoom=users_online[i].inRoom;
                 socket_nickname=users_online[i].nickname;
             }
         }
-        console.log(socket_nickname);
-        console.log("message: " + socket_nickname + " : " + data["message"]); // log it to the Node.JS output
-        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }); // broadcast the message to other users
+        console.log("Sending messages " + currentRoom);
+        console.log("message: " + socket_nickname + " : " + data["message"]); 
+        //broadcast message to all other users in the room
+        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }); 
     });
 
     // This callback runs when the server receives a new username sign in
     socket.on('nickname',function(data){
         const userObject = {nickname: data["user"],id: socket.id,inRoom:socket.id};
-        console.log(userObject);
-
         //check id isnt already in array (cannot have multiple usernames)
-        let idExists=0;
+        let idExists =false;
+        // console.log(idExists);
+
         for (i in users_online) {
             if (users_online[i].id == userObject.id) {
                 //chat name already exists 
-                idExists++;
+                idExists=true;
                 //console.log(nameExists);
             }
         }
-        let nameExists=0;
+        let nameExists=false;
         for (i in users_online) {
             if (users_online[i].nickname == userObject.nickname) {
                 //chat name already exists 
-                nameExists++;
+                nameExists=true;
                 //console.log(nameExists);
             }
         }
-        if (nameExists>0) {
-            socket.emit("success",{success:false, message:"name already exists"});
-        } else if (idExists>0) {
-            socket.emit("success",{success:false, message:"you already have a username"});
+        // console.log(nameExists);
+        if (nameExists==true) {
+            socket.emit("success",{success:false, message:"Name already exists"});
+        } else if (idExists==true) {
+            socket.emit("success",{success:false, message:"You already have a username"});
         }
         else {
             users_online.push(userObject);
@@ -94,102 +95,114 @@ io.sockets.on("connection", function (socket) {
          console.log(users_online);
         
     });
-    // // If a client disconnects, removes from users_online array
-    // socket.on('disconnect',function(data){
-    //     for (let i in users_online){
-    //         if(users_online[i].id==socket.id){
-    //             users_online.splice(i,1);
-    //         }
-    //     }
-    // });
+    // If a client disconnects, removes from users_online array
+    socket.on('disconnect',function(data){
+        for (let i in users_online){
+            if(users_online[i].id==socket.id){
+                users_online.splice(i,1);
+            }
+        }
+    });
    
     
     //This callback runs when the server receives a new chatroom name
     socket.on('room_name', function(data){
         //create chatroom JSON object 
-        const roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:null, password:data["room_password"]};
+        const roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:new Array(), password:null};
         console.log(roomObject); 
-        console.log(chatrooms);
 
-        let nameExists=0;
+        let nameExists=false;
         for (i in chatrooms) {
             if (chatrooms[i].roomName == roomObject.roomName) {
                 //chat name already exists 
-                nameExists++;
+                nameExists=true;
                 //console.log(nameExists);
             }
         }
         
-        if (nameExists>0) {
-            socket.emit("success",{success:false, message:"room name already exists"});
+        if (nameExists==true) {
+            socket.emit("success",{success:false, message:"Room name already exists"});
         }
         else {
-            console.log(chatrooms.includes(roomObject));
-
+          //  console.log(chatrooms.includes(roomObject));
             chatrooms.push(roomObject);
             socket.emit("success",{success:true});
-            
             io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
-
             //join creator to the given room
             socket.join(data["room_name"]);
-
             //get nickname
             let socket_nickname=null;
             for(let i in users_online){
                 if(users_online[i].id==socket.id){
-                    socket_nickname=users_online[i].nickname;
+                    //retrieve the nickname based on the userid
+                    //socket_nickname=users_online[i].nickname;
+                    //set the inRoom attribute to the room currently in
+                    users_online[i].inRoom=data["room_name"];
                 }
             }
 
-            const roomsIn=socket.rooms;
-            let iterator =socket.rooms.values();
-            let currentRoom=iterator.next().value;
-            let currentRoomName = null;
-            let hostinroom = new Array();
-            hostinroom.push(socket_nickname);
+            // const roomsIn=socket.rooms;
+            // let iterator =socket.rooms.values();
+            // let currentRoom=iterator.next().value;
+            // let currentRoomName = null;
+            // let hostinroom = new Array();
+            // hostinroom.push(socket_nickname);
             //add creator to the usersInRoom array 
             for (let i in chatrooms){
                 if(chatrooms[i].roomName==data["room_name"]){
-                    chatrooms[i].usersInRoom=hostinroom;
-                    currentRoomName = chatrooms[i].roomName;
+                    chatrooms[i].usersInRoom.push(socket_nickname);
+                    //currentRoomName = chatrooms[i].roomName;
                 }
             }
-            console.log(chatrooms);
-            io.in(currentRoom).emit("show_users", {usersArray:hostinroom})
+            // console.log(chatrooms);
+            // io.in(currentRoom).emit("show_users", {usersArray:hostinroom})
 
             //give chatroom info
-            io.in(currentRoom).emit("in_chatroom", {room:currentRoomName, creator:socket_nickname})
+            // io.in(currentRoom).emit("in_chatroom", {room:data["room_name"], creator:socket_nickname})
             //creator privileges 
-            io.in(currentRoom).emit("creator_privileges", {iscreator: true})
+            // io.in(currentRoom).emit("creator_privileges", {iscreator: true})
 
-            
+           
         }
+        console.log("Chatrooms: " + chatrooms);
+        console.log("Users online: " + users_online);
 
-
-    })
+    });
    
     //This callback runs whenever a user joins the new chatroom
     socket.on('joined_room', function(data){
-        const roomsIn=socket.rooms;
-        let iterator =socket.rooms.values();
-        let currentRoom=iterator.next().value;
-        socket.leave(currentRoom);
-        for (let i in users_online){
-            if(socket.id==users_online[i].id && users_online.inRoom==socket.id){
-                users_online.inRoom=null;
+        // const roomsIn=socket.rooms;
+        // let iterator =socket.rooms.values();
+        // let currentRoom=iterator.next().value;
+        let currentRoom=null;
+        for(let i in users_online){
+            if(socket.id==users_online[i].id){
+                console.log("Old room: "+ users_online[i].inRoom);
+                currentRoom=users_online[i].inRoom;
             }
         }
+        
+        //leave current room
+        socket.leave(currentRoom);
+        //set inRoom attribute to null
+        // for (let i in users_online){
+        //     if(socket.id==users_online[i].id && users_online.inRoom==socket.id){
+        //         users_online.inRoom=null;
+        //     }
+        // }
         // console.log(roomsIn);
         // console.log(currentRoom);
         //console.log(data["room_name"]);
 
         //join socket to the given room 
+        console.log("Info received: " + data["room_name"]);
         socket.join(data["room_name"]);
+        //set inRoom attribute of socket to the current room
         for (let i in users_online){
             if(socket.id==users_online[i].id){
+                //set inRoom attribute of user to current room (button clicked)
                 users_online[i].inRoom=data["room_name"];
-
+                console.log("New room: "+ users_online[i].inRoom);
             }
         }
         //update array of clients in a room
@@ -200,30 +213,43 @@ io.sockets.on("connection", function (socket) {
         //         chatrooms[i].usersInRoomSet=usersInRoom;
         //     }
         // }
-        let roomName = null;
-        let roomCreator = null;
+        console.log("Chatrooms: " + chatrooms);
+        console.log("Users online: "+ users_online);
+       
+      
+        
+    });
+   
+    socket.on("show_room_info",function(data){
+       let roomName = null;
+       let roomCreator = null;
        let usersInThisRoom = new Array();
+       //scan through the users_online array to get all the users in this room
        for (let i in users_online){
+        //if any users are in this room
         if(users_online[i].inRoom==data["room_name"]){
-            usersInThisRoom.push(users_online[i].nickname);
+            //retrieve their user nickname
+            let socket_nickname=users_online[i].nickname;
+            //push to new array
+            usersInThisRoom.push(socket_nickname);
             }
-            console.log(users_online);
         }
-        console.log(usersInThisRoom);
+        console.log("All users in room: " + usersInThisRoom);
         for (let i in chatrooms){
             if(chatrooms[i].roomName==data["room_name"]){
                 chatrooms[i].usersInRoom=usersInThisRoom;
+                console.log("Array in chatroom attribute: " + chatrooms[i].usersInRoom);
                 roomName=chatrooms[i].roomName;
                 roomCreator=chatrooms[i].creator;
             }
         }
         
-
-        io.in(currentRoom).emit("show_users", {usersArray:usersInThisRoom});
+        
+        io.in(data["room_name"]).emit("show_users", {usersArray:usersInThisRoom});
 
         //show chatroom info
 
-        //get nickname of creator 
+        // get nickname of creator 
         let creator_nickname=null;
         for(let i in users_online){
             if(roomCreator==users_online[i].id){
@@ -231,12 +257,10 @@ io.sockets.on("connection", function (socket) {
             }
         };
 
-        io.in(currentRoom).emit("in_chatroom", {room:roomName, creator:creator_nickname})
+        io.in(data["room_name"]).emit("in_chatroom", {room:roomName, creator:creator_nickname})
 
         // if (socket.id == currentRoom.creator) {
         //     io.in(currentRoom).emit("creator_privileges", {iscreator: true})
         // }
-        
-    })
-   
+    });
 });

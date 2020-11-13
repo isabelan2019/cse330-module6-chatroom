@@ -7,17 +7,19 @@
 
       var socketio = io.connect();
     
-      
+      //send message to server
+      function sendMessage(){
+        var msg = document.getElementById("message_input").value;
+        socketio.emit("message_to_server", {message: msg});
+      }
+      //receive message from server and append 
       socketio.on("message_to_client",function(data) {
         //Append an HR thematic break and the escaped HTML of the new message
         document.getElementById("chatlog").appendChild(document.createElement("hr"));
         document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));
       });
 
-      function sendMessage(){
-        var msg = document.getElementById("message_input").value;
-        socketio.emit("message_to_server", {message: msg});
-      }
+      
 
       
       function addUser(){
@@ -33,20 +35,32 @@
 
       function createRoom(){
         event.preventDefault();
-          const roomName = document.getElementById("chatroom_name").value;
-          console.log(roomName);
-          //const roomPassword=document.getElementById("chatroom_password");
-          if (document.getElementById("chatroom_name").value.length == 0) {
-            alert("empty inputs");
-          }
-          else {
-            //sends to server room name and password
-            socketio.emit("room_name",{room_name: roomName});
-            //hears from server if their room was succesfully created 
-          }
+        const roomName = document.getElementById("chatroom_name").value;
+        console.log(roomName);
+        //const roomPassword=document.getElementById("chatroom_password");
+        if (document.getElementById("chatroom_name").value.length == 0) {
+          alert("empty inputs");
+        }
+        else {
+          //sends to server room name and password
+          socketio.emit("room_name",{room_name: roomName});
+          socketio.emit("show_room_info",{room_name: roomName});
+          //hears from server if their room was succesfully created 
           
-          document.getElementById("chatroom_name").value="";
-          
+        }
+        
+        document.getElementById("chatroom_name").value="";
+        //show all users in the chatroom
+        socketio.on("show_users",function(data){
+          showusers(data["usersArray"]);
+        });
+        //show chatroom details 
+        socketio.on("in_chatroom",function(data){
+        console.log(data);
+        document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
+        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
+
+        });
       }
       function createPrivateRoom(){
         event.preventDefault();
@@ -55,9 +69,27 @@
           const roomPassword=document.getElementById("chatroom_password").value;
           //sends to server room name and password
           socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
+          socketio.emit("show_room_info",{room_name: roomName});
+
           //hears from server if their room was succesfully created 
           
       }
+      //hears from server all the room names available
+      socketio.on("show_rooms",function(data){
+        document.getElementById("join-Rooms").innerText ="";
+        for (let i in data["roomsArray"]) {
+          document.getElementById("join-Rooms").appendChild(document.createElement("br"));
+          let chatroomButton = document.createElement("button");
+          let chatroomName=document.createTextNode(data["roomsArray"][i].roomName);
+          chatroomButton.appendChild(chatroomName);
+          chatroomButton.id=data["roomsArray"][i].roomName;
+          chatroomButton.setAttribute('class', 'chatroom')
+          document.getElementById("join-Rooms").appendChild(chatroomButton);
+          //add event listeners to open a chatroom if the chatroom button is clicked
+          document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
+          }
+        })
+
       socketio.on("success",function(data){
         // console.log(data);
         if(data["success"]==true){
@@ -68,33 +100,27 @@
         }
       });
 
-        //hears from server all the room names available
-        socketio.on("show_rooms",function(data){
-          document.getElementById("join-Rooms").innerText ="";
-          for (i in data["roomsArray"]) {
-            document.getElementById("join-Rooms").appendChild(document.createElement("br"));
-            let chatroomButton = document.createElement("button");
-            let chatroomName=document.createTextNode(data["roomsArray"][i].roomName);
-            chatroomButton.appendChild(chatroomName);
-            chatroomButton.id=data["roomsArray"][i].roomName;
-            chatroomButton.setAttribute('class', 'open-chatroom')
-            document.getElementById("join-Rooms").appendChild(chatroomButton);
-            //add event listeners to open a chatroom if the chatroom button is clicked
-            document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
 
-          }
-          
-        })
 
       function openChatRoom(event){
         console.log(event.target.id);
+        document.getElementById("chatlog").innerText="";
         //when a button is clicked, send the name of the room
         socketio.emit("joined_room",{room_name:event.target.id});
-      }
-      //show all users in the chatroom
-      socketio.on("show_users",function(data){
-        showusers(data["usersArray"]);
+        socketio.emit("show_room_info",{room_name:event.target.id});
+        //show all users in the chatroom
+        socketio.on("show_users",function(data){
+          showusers(data["usersArray"]);
         });
+        //show chatroom details 
+       socketio.on("in_chatroom",function(data){
+        console.log(data);
+        document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
+        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
+
+        });
+      }
+      
 
       function showusers(data) {
         document.getElementById("userList").innerHTML=" ";
@@ -114,30 +140,24 @@
           //add event listener to private message
         }
       }
-      //show chatroom details 
-      socketio.on("in_chatroom",function(data){
-        console.log(data);
-        document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
-        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
-
-        });
+      
 
       //creator privileges
-      socketio.on("creator_privileges",function(data){
-        console.log(data);
-        if(data["iscreator"]==true){
-          alert("you are the creator");
+      // socketio.on("creator_privileges",function(data){
+      //   console.log(data);
+      //   if(data["iscreator"]==true){
+      //     alert("you are the creator");
 
-          //
-          let kickoutButton = document.createElement("button");
-          let banButton = document.createElement("button");          
-          kickoutButton.innerText = "kick out";
-          banButton.innerText ="ban";
-          //need to add event listeners
-        }
-        //this should only be called for the user of the chatroom
+      //     //
+      //     let kickoutButton = document.createElement("button");
+      //     let banButton = document.createElement("button");          
+      //     kickoutButton.innerText = "kick out";
+      //     banButton.innerText ="ban";
+      //     //need to add event listeners
+      //   }
+      //   //this should only be called for the user of the chatroom
 
-      });
+      // });
 
       </script>
    </head>
