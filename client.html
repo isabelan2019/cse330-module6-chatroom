@@ -33,36 +33,50 @@
           //sends to server room name and password
           socketio.emit("room_name",{room_name: roomName});
           //hears from server if their room was succesfully created 
-          socketio.on("success",function(data){
+          
+      }
+      socketio.on("success",function(data){
               if(data["success"]==true){
-                  alert("Your room has been successfully created.")
+                  alert("action successful")
               }
           })
-      }
 
         //hears from server all the room names available
         socketio.on("show_rooms",function(data){
-        document.getElementById("list-Rooms").appendChild(document.createElement("br"));
-        let chatroomButton = document.createElement("button");
-        let chatroomName=document.createTextNode(data["roomsArray"][data["index"]-1].roomName);
-        chatroomButton.appendChild(chatroomName);
-        chatroomButton.id=data["roomsArray"][data["index"]-1].roomName;
-        chatroomButton.setAttribute('class', 'open-chatroom')
-        document.getElementById("list-Rooms").appendChild(chatroomButton);
-        //add event listeners to open a chatroom if the chatroom button is clicked
-        document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
+          document.getElementById("list-Rooms").appendChild(document.createElement("br"));
+          let chatroomButton = document.createElement("button");
+          let chatroomName=document.createTextNode(data["roomsArray"][data["index"]-1].roomName);
+          chatroomButton.appendChild(chatroomName);
+          chatroomButton.id=data["roomsArray"][data["index"]-1].roomName;
+          chatroomButton.setAttribute('class', 'open-chatroom')
+          document.getElementById("list-Rooms").appendChild(chatroomButton);
+          //add event listeners to open a chatroom if the chatroom button is clicked
+          document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
         })
 
       function openChatRoom(event){
         console.log(event.target.id);
-        //show all users in the chatroom
-        socketio.on("show_users",function(data){
-        document.getElementById("list-Users").appendChild(document.createElement("br"));
-        
-        // document.getElementById("list-Users").appendChild(document.createTextNode(data["usersArray"].nickname[0]));
-        });
         //when a button is clicked, send the name of the room
         socketio.emit("joined_room",{room_name:event.target.id});
+      }
+      //show all users in the chatroom
+      socketio.on("show_users",function(data){
+          showusers(data["usersArray"]);
+        });
+
+      function showusers(data) {
+        document.getElementById("list-Users").innerHTML=" ";
+        //shows users in the room when joined 
+        //(should be called when a host makes and when someone joins)
+        // console.log(data);
+        let usertext = " ";
+        for (i in data) {
+          usertext = usertext + data[i]+ ", ";
+        }
+        usertext = usertext + " are in the chatroom";
+        document.getElementById("list-Users").appendChild(document.createElement("br"));
+        document.getElementById("list-Users").appendChild(document.createTextNode(usertext));
+        
       }
       </script>
    </head>
