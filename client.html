@@ -22,7 +22,12 @@
       
       function addUser(){
         const nickname = document.getElementById("nickname").value;
-        socketio.emit("nickname", {user: nickname});
+        if (document.getElementById("nickname").value.length == 0) {
+          alert("empty inputs");
+        }
+        else {
+          socketio.emit("nickname", {user: nickname});
+        }
         document.getElementById("nickname").value="";
       }
 
@@ -31,26 +36,37 @@
           const roomName = document.getElementById("chatroom_name").value;
           console.log(roomName);
           //const roomPassword=document.getElementById("chatroom_password");
-          //sends to server room name and password
-          socketio.emit("room_name",{room_name: roomName});
-          //hears from server if their room was succesfully created 
+          if (document.getElementById("chatroom_name").value.length == 0) {
+            alert("empty inputs");
+          }
+          else {
+            //sends to server room name and password
+            socketio.emit("room_name",{room_name: roomName});
+            //hears from server if their room was succesfully created 
+          }
+          
+          document.getElementById("chatroom_name").value="";
           
       }
       function createPrivateRoom(){
         event.preventDefault();
           const roomName = document.getElementById("chatroom_name").value;
           console.log(roomName);
-          const roomPassword=document.getElementById("chatroom_password");
+          const roomPassword=document.getElementById("chatroom_password").value;
           //sends to server room name and password
           socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
           //hears from server if their room was succesfully created 
           
       }
       socketio.on("success",function(data){
-              if(data["success"]==true){
-                  alert("action successful");
-              }
-          });
+        // console.log(data);
+        if(data["success"]==true){
+            alert("action successful");
+        }
+        else {
+          alert("unsuccessful: "+data["message"]);
+        }
+      });
 
         //hears from server all the room names available
         socketio.on("show_rooms",function(data){
@@ -116,15 +132,15 @@
    </head>
    <body>
       <div id="create-nickname">
-        <label for="nickanem">What's your nickname? </label>
-        <input type="text" id="nickname">
+        <label for="nickname">What's your nickname? </label>
+        <input type="text" id="nickname" required>
         <button onclick="addUser()">Sign On</button>
       </div>
       <div id="create-chat">
         <div id="createroom">
           <p>Create Chat Room</p>
           <label for="chatroom_name">New Chat Room Name: </label>
-          <input type="text" id="chatroom_name">
+          <input type="text" id="chatroom_name" required>
           <!-- <label for="chatroom_password">New Chat Room Password: </label>
           <input type="password" id="chatroom_password"> -->
           <button onclick="createRoom()">Create Room</button>
@@ -132,9 +148,9 @@
         <div id="createprivateroom">
           <p>Create Private Chat Room</p>
           <label for="private_name">New Chat Room Name: </label>
-          <input type="text" id="private_name">
+          <input type="text" id="private_name" required>
           <label for="private_password">New Chat Room Password: </label>
-          <input type="password" id="private_password">
+          <input type="password" id="private_password" required>
           <button onclick="createPrivateRoom()">Create Private Room</button>
         </div>
 
@@ -155,7 +171,7 @@
         </div>
 
         <div id="send-message">
-          <input type="text" id="message_input"/>
+          <input type="text" id="message_input" required/>
           <button onclick="sendMessage()">Send</button>
         </div>
         
