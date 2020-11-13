@@ -200,6 +200,8 @@ io.sockets.on("connection", function (socket) {
         //         chatrooms[i].usersInRoomSet=usersInRoom;
         //     }
         // }
+        let roomName = null;
+        let roomCreator = null;
        let usersInThisRoom = new Array();
        for (let i in users_online){
         if(users_online[i].inRoom==data["room_name"]){
@@ -211,6 +213,8 @@ io.sockets.on("connection", function (socket) {
         for (let i in chatrooms){
             if(chatrooms[i].roomName==data["room_name"]){
                 chatrooms[i].usersInRoom=usersInThisRoom;
+                roomName=chatrooms[i].roomName;
+                roomCreator=chatrooms[i].creator;
             }
         }
         
@@ -219,15 +223,15 @@ io.sockets.on("connection", function (socket) {
 
         //show chatroom info
 
-        //get nickname 
-        let socket_nickname=null;
+        //get nickname of creator 
+        let creator_nickname=null;
         for(let i in users_online){
-            if(users_online[i].id==socket.id){
-                socket_nickname=users_online[i].nickname;
+            if(roomCreator==users_online[i].id){
+                creator_nickname=users_online[i].nickname;
             }
         };
 
-        io.in(currentRoom).emit("in_chatroom", {room:currentRoom.roomName, creator:socket_nickname})
+        io.in(currentRoom).emit("in_chatroom", {room:roomName, creator:creator_nickname})
 
         // if (socket.id == currentRoom.creator) {
         //     io.in(currentRoom).emit("creator_privileges", {iscreator: true})
