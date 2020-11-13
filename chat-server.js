@@ -62,6 +62,16 @@ io.sockets.on("connection", function (socket) {
     socket.on('nickname',function(data){
         const userObject = {nickname: data["user"],id: socket.id,inRoom:socket.id};
         console.log(userObject);
+
+        //check id isnt already in array (cannot have multiple usernames)
+        let idExists=0;
+        for (i in users_online) {
+            if (users_online[i].id == userObject.id) {
+                //chat name already exists 
+                idExists++;
+                //console.log(nameExists);
+            }
+        }
         let nameExists=0;
         for (i in users_online) {
             if (users_online[i].nickname == userObject.nickname) {
@@ -72,6 +82,8 @@ io.sockets.on("connection", function (socket) {
         }
         if (nameExists>0) {
             socket.emit("success",{success:false, message:"name already exists"});
+        } else if (idExists>0) {
+            socket.emit("success",{success:false, message:"you already have a username"});
         }
         else {
             users_online.push(userObject);
@@ -128,21 +140,21 @@ io.sockets.on("connection", function (socket) {
                     socket_nickname=users_online[i].nickname;
                 }
             }
-            let currentRoom = null;
+            let currentRoomName = null;
             let hostinroom = new Array();
             hostinroom.push(socket_nickname);
             //add creator to the usersInRoom array 
             for (let i in chatrooms){
                 if(chatrooms[i].roomName==data["room_name"]){
                     chatrooms[i].usersInRoom=hostinroom;
-                    currentRoom = chatrooms[i];
+                    currentRoomName = chatrooms[i].roomName;
                 }
             }
             console.log(chatrooms);
             io.in(currentRoom).emit("show_users", {usersArray:hostinroom})
 
             //give chatroom info
-            io.in(currentRoom).emit("in_chatroom", {room:currentRoom.roomName, creator:socket_nickname})
+            io.in(currentRoom).emit("in_chatroom", {room:currentRoomName, creator:socket_nickname})
             //creator privileges 
             io.in(currentRoom).emit("creator_privileges", {iscreator: true})
 
@@ -211,6 +223,10 @@ io.sockets.on("connection", function (socket) {
         };
 
         io.in(currentRoom).emit("in_chatroom", {room:currentRoom.roomName, creator:socket_nickname})
+
+        // if (socket.id == currentRoom.creator) {
+        //     io.in(currentRoom).emit("creator_privileges", {iscreator: true})
+        // }
         
     })
    
