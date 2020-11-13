@@ -33,6 +33,7 @@ const io = socketio.listen(server);
 
 // This callback runs when a new Socket.IO connection is established.
 io.sockets.on("connection", function (socket) {
+    io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
  
     // This callback runs when the server receives a new message from the client.
     socket.on('message_to_server', function (data) {
@@ -140,6 +141,10 @@ io.sockets.on("connection", function (socket) {
                     socket_nickname=users_online[i].nickname;
                 }
             }
+
+            const roomsIn=socket.rooms;
+            let iterator =socket.rooms.values();
+            let currentRoom=iterator.next().value;
             let currentRoomName = null;
             let hostinroom = new Array();
             hostinroom.push(socket_nickname);

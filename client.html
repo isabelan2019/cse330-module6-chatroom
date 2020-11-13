@@ -70,15 +70,20 @@
 
         //hears from server all the room names available
         socketio.on("show_rooms",function(data){
-          document.getElementById("join-Rooms").appendChild(document.createElement("br"));
-          let chatroomButton = document.createElement("button");
-          let chatroomName=document.createTextNode(data["roomsArray"][data["index"]-1].roomName);
-          chatroomButton.appendChild(chatroomName);
-          chatroomButton.id=data["roomsArray"][data["index"]-1].roomName;
-          chatroomButton.setAttribute('class', 'open-chatroom')
-          document.getElementById("join-Rooms").appendChild(chatroomButton);
-          //add event listeners to open a chatroom if the chatroom button is clicked
-          document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
+          document.getElementById("join-Rooms").innerText ="";
+          for (i in data["roomsArray"]) {
+            document.getElementById("join-Rooms").appendChild(document.createElement("br"));
+            let chatroomButton = document.createElement("button");
+            let chatroomName=document.createTextNode(data["roomsArray"][i].roomName);
+            chatroomButton.appendChild(chatroomName);
+            chatroomButton.id=data["roomsArray"][i].roomName;
+            chatroomButton.setAttribute('class', 'open-chatroom')
+            document.getElementById("join-Rooms").appendChild(chatroomButton);
+            //add event listeners to open a chatroom if the chatroom button is clicked
+            document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
+
+          }
+          
         })
 
       function openChatRoom(event){
