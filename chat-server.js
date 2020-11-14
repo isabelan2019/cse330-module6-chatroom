@@ -423,9 +423,64 @@ io.sockets.on("connection", function (socket) {
             socket.emit("success",{success:false,message:"Only creators of the chat can ban users."});
         }
         
+    });
+    socket.on("delete",function(data){
+        //retrieve the current room
+        let currentRoom=null;
+        for(let i in users_online){
+            if(users_online[i].id==socket.id){
+                currentRoom=users_online[i].inRoom;
+            }
+        }
+        let creator=null;
+        //retrieve creator of current room
+        for(let i in chatrooms){
+            if(currentRoom==chatrooms[i].roomName){
+                creator=chatrooms[i].creator;
+            }
+        }
+        //check if socket has creator privileges
+        if(socket.id==creator){
+            //inform all users this chat has been deleted
+
+            io.in(currentRoom).emit("deleted", {success:true, message:"This chat has been deleted"});
+            //go through all the users in this room and set their inRoom to null
+            for(let i in users_online){
+                if(users_online[i].inRoom==currentRoom){
+                    users_online[i].inRoom=null;
+                    let eachSocket=io.sockets.sockets.get(users_online[i].id);
+                    eachSocket.leave(currentRoom);
+                }
+            }
+            //run thru the chat rooms array to remove it
+            for (let i in chatrooms){
+                if(chatrooms[i].roomName==currentRoom){
+                    chatrooms.splice(i,1);
+                }
+            }
+            console.log("DELETE FUNCTION CHATROOMS: ");
+            console.log(chatrooms);
+            io.sockets.emit("roomDeleted",{roomName:currentRoom});
+        }
+        else{
+            socket.emit("success",{success:false, message: "Only creators of the chat can delete the chat."});
+        }
 
     });
 
+    //check if there are no users
+    socket.on("checkRoomsEmpty",function(data){
+        for (let i in chatrooms){
+            if(chatrooms[i].usersInRoom.length==0){
+                console.log("BEFORE users left: ");
+                console.log(chatrooms);
+                io.sockets.emit("roomDeleted",{roomName: chatrooms[i].roomName});
+                chatrooms.splice(i,1);
+                console.log("AFTER users left: ");
+                console.log(chatrooms);
+            }
+        }
+    });
     
 
    
