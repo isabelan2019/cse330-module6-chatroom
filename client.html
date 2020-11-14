@@ -18,8 +18,9 @@
           socketio.emit("message_to_server", {message: msg});
         }
         else {
-          socketio.emit("message_to_server", {message: msg, to: sendTo});
+          socketio.emit("private_message_to_server", {message: msg, to: sendTo});
         }
+        document.getElementById("message_input").value="";
       }
       //receive message from server and append 
       socketio.on("message_to_client",function(data) {
@@ -133,6 +134,7 @@
 
       function showusers(data) {
         document.getElementById("userList").innerHTML=" ";
+        document.getElementById("send-private-message").innerHTML=" ";
 
         //make a dropdown option for who to send message to 
         let primsgLabel = document.createElement("label");
@@ -170,8 +172,8 @@
 
 
         //adds the dropdown next to the message input
-        document.getElementById("send-message").prepend(primsgDropdown);
-        document.getElementById("send-message").prepend(primsgLabel);
+        document.getElementById("send-private-message").prepend(primsgDropdown);
+        document.getElementById("send-private-message").prepend(primsgLabel);
 
 
       }
@@ -263,6 +265,9 @@
         </div>
 
         <div id="send-message">
+          <div id="send-private-message">
+
+          </div>
 
           <input type="text" id="message_input" required/>
           <button onclick="sendMessage()">Send</button>

@@ -12,6 +12,12 @@ const cssFile = "client.css";
 const server = http.createServer(function (req, res) {
     // This callback runs when a new connection is made to our HTTP server.
 
+    let filePath = path.join(
+        __dirname, 
+        req.url === "/" ? "client.html" : req.url
+    );
+   
+
     fs.readFile(file, function (err, data) {
         // This callback runs when the client.html file has been read from the filesystem.
 
@@ -20,13 +26,13 @@ const server = http.createServer(function (req, res) {
         res.end(data);
     });
 
-    fs.readFile(cssFile, function (err, data) {
-        // This callback runs when the client.css file has been read from the filesystem.
+    // fs.readFile(cssFile, function (err, data) {
+    //     // This callback runs when the client.css file has been read from the filesystem.
 
-        if (err) return res.writeHead(500);
-        res.writeHead(200);
-        res.end(data);
-    });
+    //     if (err) return res.writeHead(500);
+    //     res.writeHead(200);
+    //     res.end(data);
+    // });
 
 
 });
@@ -74,6 +80,29 @@ io.sockets.on("connection", function (socket) {
         console.log("message: " + socket_nickname + " : " + data["message"]); 
         //broadcast message to all other users in the room
         io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }); 
+    });
+    socket.on("private_message_to_server", function(data){
+
+    //check that to user is not the same as current user 
+        //retrieve nickname from the users_online array by using the socket id
+        let socket_nickname=null;
+        for(let i in users_online){
+            if(users_online[i].id==socket.id){
+                //currentRoom=users_online[i].inRoom;
+                socket_nickname=users_online[i].nickname;
+            }
+        }
+        
+
+        if (socket_nickname==data["to"]){
+            //false success 
+            socket.emit("success",{success:false, message:"cannot send yourself a private message"});
+        }
+        else {
+
+        }
+
+
     });
 
     //This callback runs when the server receives a user to send message to
