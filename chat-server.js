@@ -96,7 +96,7 @@ io.sockets.on("connection", function (socket) {
         const recipient = data["to"];
         console.log("sending to "+data["to"]);
         console.log("private message from " + socket_nickname + ": " + data["message"]); 
-        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + "sent you a private message: " + data["message"] }); 
+        io.to(recipient).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
 
         // if (socket_nickname==data["to"]){
         //     //false success 
