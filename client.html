@@ -14,12 +14,9 @@
         console.log(sendTo);
 
         var msg = document.getElementById("message_input").value;
-        if (sendTo == "Everyone") {
-          socketio.emit("message_to_server", {message: msg});
-        }
-        else {
-          socketio.emit("private_message_to_server", {message: msg, to: sendTo});
-        }
+        
+        socketio.emit("message_to_server", {message: msg, to: sendTo});
+        
         document.getElementById("message_input").value="";
       }
       //receive message from server and append 

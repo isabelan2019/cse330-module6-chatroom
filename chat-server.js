@@ -70,46 +70,66 @@ io.sockets.on("connection", function (socket) {
         
         //retrieve nickname from the users_online array by using the socket id
         let socket_nickname=null;
+        let recipient_id = null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
                 currentRoom=users_online[i].inRoom;
                 socket_nickname=users_online[i].nickname;
             }
+            if (users_online[i].nickname==data["to"]){
+                recipient_id = users_online[i].id;
+
+            }
         }
+        //const recipient = data["to"];
         console.log("Sending messages to Room Name: " + currentRoom);
         console.log("message: " + socket_nickname + " : " + data["message"]); 
-        //broadcast message to all other users in the room
-        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }); 
-    });
-    socket.on("private_message_to_server", function(data){
-
-    //check that to user is not the same as current user 
-        //retrieve nickname from the users_online array by using the socket id
-        let socket_nickname=null;
-        let currentRoom=null;
-        for(let i in users_online){
-            if(users_online[i].id==socket.id){
-                currentRoom=users_online[i].inRoom;
-                socket_nickname=users_online[i].nickname;
-            }
+        if (data["to"]== "Everyone") {
+            console.log("Sending messages to Room Name: " + currentRoom);
+            console.log("message: " + socket_nickname + " : " + data["message"]); 
+            //broadcast message to all other users in the room
+            io.in(currentRoom).emit("message_to_client", { message: socket_nickname + ": " + data["message"] }); 
         }
-        const recipient = data["to"];
-        console.log("sending to "+data["to"]);
-        console.log("private message from " + socket_nickname + ": " + data["message"]); 
-        io.to(recipient).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
+        else {
+            console.log("private message from " + socket_nickname + ": " + data["message"]); 
+            io.to(recipient_id).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
+            //io.to(data["to"]).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
+            //io.in(currentRoom).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
 
-        // if (socket_nickname==data["to"]){
-        //     //false success 
-        //     socket.emit("success",{success:false, message:"cannot send yourself a private message"});
-        // }
-        // else {
-
-        //     io.in(data["to"]).emit("message_to_client", { message: "private message from " + socket_nickname + ": " + data["message"] }); 
-
-        // }
+        }
+        
 
 
     });
+    // socket.on("private_message_to_server", function(data){
+
+    // //check that to user is not the same as current user 
+    //     //retrieve nickname from the users_online array by using the socket id
+    //     let socket_nickname=null;
+    //     let currentRoom=null;
+    //     for(let i in users_online){
+    //         if(users_online[i].id==socket.id){
+    //             currentRoom=users_online[i].inRoom;
+    //             socket_nickname=users_online[i].nickname;
+    //         }
+    //     }
+    //     const recipient = data["to"];
+    //     console.log("sending to "+data["to"]);
+    //     console.log("private message from " + socket_nickname + ": " + data["message"]); 
+    //     io.to(recipient).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
+
+    //     // if (socket_nickname==data["to"]){
+    //     //     //false success 
+    //     //     socket.emit("success",{success:false, message:"cannot send yourself a private message"});
+    //     // }
+    //     // else {
+
+    //     //     io.in(data["to"]).emit("message_to_client", { message: "private message from " + socket_nickname + ": " + data["message"] }); 
+
+    //     // }
+
+
+    // });
 
     //This callback runs when the server receives a user to send message to
 
