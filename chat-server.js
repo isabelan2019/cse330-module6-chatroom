@@ -70,11 +70,13 @@ io.sockets.on("connection", function (socket) {
         
         //retrieve nickname from the users_online array by using the socket id
         let socket_nickname=null;
+        let socket_id = null;
         let recipient_id = null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
                 currentRoom=users_online[i].inRoom;
                 socket_nickname=users_online[i].nickname;
+                socket_id = users_online[i].id;
             }
             if (users_online[i].nickname==data["to"]){
                 recipient_id = users_online[i].id;
@@ -94,7 +96,10 @@ io.sockets.on("connection", function (socket) {
             console.log("private message from " + socket_nickname + ": " + data["message"]); 
             io.to(recipient_id).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
             //io.to(data["to"]).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
-            //io.in(currentRoom).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] }); 
+            //io.in(currentRoom).emit("message_to_client", { message: socket_nickname + " sent you a private message: " + data["message"] });
+            
+            io.to(socket_id).emit("message_to_client", { message: "you sent a private message to " + data["to"] + ": " + data["message"] }); 
+
 
         }
         
