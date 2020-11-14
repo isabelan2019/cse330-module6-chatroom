@@ -14,7 +14,7 @@
         console.log(sendTo);
 
         var msg = document.getElementById("message_input").value;
-        if (sendTo = "Everyone") {
+        if (sendTo == "Everyone") {
           socketio.emit("message_to_server", {message: msg});
         }
         else {
@@ -24,6 +24,7 @@
       }
       //receive message from server and append 
       socketio.on("message_to_client",function(data) {
+        console.log(data);
         //Append an HR thematic break and the escaped HTML of the new message
         document.getElementById("chatlog").appendChild(document.createElement("hr"));
         document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));

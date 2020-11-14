@@ -86,21 +86,27 @@ io.sockets.on("connection", function (socket) {
     //check that to user is not the same as current user 
         //retrieve nickname from the users_online array by using the socket id
         let socket_nickname=null;
+        let currentRoom=null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
-                //currentRoom=users_online[i].inRoom;
+                currentRoom=users_online[i].inRoom;
                 socket_nickname=users_online[i].nickname;
             }
         }
-        
+        const recipient = data["to"];
+        console.log("sending to "+data["to"]);
+        console.log("private message from " + socket_nickname + ": " + data["message"]); 
+        io.in(currentRoom).emit("message_to_client", { message: socket_nickname + "sent you a private message: " + data["message"] }); 
 
-        if (socket_nickname==data["to"]){
-            //false success 
-            socket.emit("success",{success:false, message:"cannot send yourself a private message"});
-        }
-        else {
+        // if (socket_nickname==data["to"]){
+        //     //false success 
+        //     socket.emit("success",{success:false, message:"cannot send yourself a private message"});
+        // }
+        // else {
 
-        }
+        //     io.in(data["to"]).emit("message_to_client", { message: "private message from " + socket_nickname + ": " + data["message"] }); 
+
+        // }
 
 
     });
