@@ -87,17 +87,8 @@
           //add event listeners to open a chatroom if the chatroom button is clicked
           document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
           }
-        })
-      
-      //SUCCESS OR FAILURE MESSAGES
-      socketio.on("success",function(data){
-        if(data["success"]==true){
-            alert("action successful");
-        }
-        else {
-          alert("unsuccessful: "+data["message"]);
-        }
-      });
+        });
+   
       
       //OPEN CHAT ROOM 
       function openChatRoom(event){
@@ -118,6 +109,7 @@
             hideRoomInfo();
           }
         });
+        socketio.emit("checkRoomsEmpty");
       }
       
       //SHOW room name and creator/owner
@@ -173,6 +165,7 @@
         document.getElementById("send-private-message").prepend(primsgLabel);
 
       }
+      
     //GRANTS creator privileges
      socketio.on("creator_privileges",function(data){
         if(data["isCreator"]==true){
@@ -199,7 +192,7 @@
             alert(data["message"]);
             hideRoomInfo();
           }
-      })
+      });
     //SEES if kick out was a success
       socketio.on("kickSuccess",function(data){
         console.log("kick success: "+data["success"]);
@@ -208,7 +201,7 @@
             alert(data["message"]);
             hideRoomInfo();
           }
-        })
+        });
     
     //BANS user
      function banUser(){
@@ -227,7 +220,34 @@
        document.getElementById("lobby").style.display="block";
       
      }
+     //DELETE room 
+     function deleteRoom(){
+       socketio.emit("delete");
+     }
     
+      //REMOVE DELETED ROOMS
+      socketio.on("roomDeleted",function(data){
+      deletedRoom=document.getElementById(data["roomName"]);
+      document.getElementById("join-Rooms").removeChild(deletedRoom);
+      });
+
+      socketio.on("deleted",function(data){
+        console.log("enter deleted");
+        if(data["success"]==true){ 
+          alert(data["message"]);
+          hideRoomInfo();
+        }
+
+      });
+      //SUCCESS OR FAILURE MESSAGES
+      socketio.on("success",function(data){
+        if(data["success"]==true){
+            alert("action successful");
+        }
+        else {
+          alert("unsuccessful: "+data["message"]);
+        }
+      });
 
       </script>
    </head>
@@ -289,6 +309,7 @@
          <br>
          <input type="text" id="kickOut">
          <button onclick="kickOut()"> Kick Out User </button>
+         <br>
          <button onclick="deleteRoom()"> Delete Room </button>
        </div>
     </div>
