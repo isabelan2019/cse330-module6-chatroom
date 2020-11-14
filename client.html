@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
    <head>
-      <script type="text/css" rel="stylesheet" href="/css/chat.css"></script>
-      <script src="/socket.io/socket.io.js"></script>
-      <script type ="text/javascript">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript">
       var socketio = io.connect();
-    
       //send message to server
       function sendMessage(){
         var msg = document.getElementById("message_input").value;
@@ -34,42 +34,36 @@
       }
 
       function createRoom(){
-        event.preventDefault();
         const roomName = document.getElementById("chatroom_name").value;
         console.log(roomName);
         //const roomPassword=document.getElementById("chatroom_password");
         if (document.getElementById("chatroom_name").value.length == 0) {
-          alert("empty inputs");
+          alert("Empty inputs");
         }
         else {
           //sends to server room name and password
           socketio.emit("room_name",{room_name: roomName});
-          socketio.emit("show_room_info",{room_name: roomName});
+          socketio.emit("update_room_users");
           //hears from server if their room was succesfully created 
-          
+          socketio.on("show_users",function(data){
+            showusers(data["usersArray"]);
+          });
+          //show chatroom details 
+          showRoomInfo();
+          document.getElementById("chatroom_name").value="";
         }
         
-        document.getElementById("chatroom_name").value="";
+        //document.getElementById("chatroom_name").value="";
         //show all users in the chatroom
-        socketio.on("show_users",function(data){
-          showusers(data["usersArray"]);
-        });
-        //show chatroom details 
-        socketio.on("in_chatroom",function(data){
-        console.log(data);
-        document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
-        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
-
-        });
+        
       }
       function createPrivateRoom(){
-        event.preventDefault();
           const roomName = document.getElementById("chatroom_name").value;
           console.log(roomName);
           const roomPassword=document.getElementById("chatroom_password").value;
           //sends to server room name and password
           socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
-          socketio.emit("show_room_info",{room_name: roomName});
+          //socketio.emit("show_room_info",{room_name: roomName});
 
           //hears from server if their room was succesfully created 
           
@@ -107,20 +101,21 @@
         document.getElementById("chatlog").innerText="";
         //when a button is clicked, send the name of the room
         socketio.emit("joined_room",{room_name:event.target.id});
-        socketio.emit("show_room_info",{room_name:event.target.id});
+        socketio.emit("update_room_users");
         //show all users in the chatroom
         socketio.on("show_users",function(data){
           showusers(data["usersArray"]);
         });
         //show chatroom details 
-       socketio.on("in_chatroom",function(data){
-        console.log(data);
-        document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
-        document.getElementById("room-name").innerText = "Chatroom:"+ data["room"];
-
+        showRoomInfo();
+      }
+      function showRoomInfo(){
+        socketio.on("in_chatroom",function(data){
+          console.log("Creator: " + data["creator"] + " Room: " + data["room"]);
+          document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
+          document.getElementById("room-name").innerText = "Chatroom: "+ data["room"];
         });
       }
-      
 
       function showusers(data) {
         document.getElementById("userList").innerHTML=" ";
@@ -129,17 +124,43 @@
         //(should be called when a host makes and when someone joins)
         console.log(data);
         //let usertext = "users ";
-        for (i in data) {
+        for (let i in data) {
+          
           let newuser = document.createElement("li");
           newuser.innerText = data[i];
           let privatemsg = document.createElement("button");
           privatemsg.innerText = "private message";
+          privatemsg.id=data[i];
+          privatemsg.setAttribute("class","pm");
           newuser.appendChild(privatemsg);
           document.getElementById("userList").appendChild(newuser);
           
-          //add event listener to private message
+         
         }
       }
+
+     socketio.on("creator_privileges",function(data){
+        if(data["isCreator"]==true){
+          document.getElementById("creatorOnly").style.display="block";
+        }
+     });
+     
+     function kickOut(){
+      const kickUser=document.getElementById("kickOut").value;
+      document.getElementById("kickOut").value="";
+      socketio.emit("kickOut",{kickUser:kickUser});
+      socketio.on("show_users",function(data){
+          showusers(data["usersArray"]);
+        });
+     }
+     function banUser(){
+       const banUser=document.getElementById("banUser").value;
+       document.getElementById("banUser").value="";
+       socketio.emit("banUser",{banUser:banUser});
+       
+     }
+    
+
       
 
       //creator privileges
@@ -190,7 +211,6 @@
 
       <div id="join-Rooms">
         <p>Open Chat Rooms</p>
-        
       </div>
     
       <div id="in-room">
@@ -198,7 +218,6 @@
         <p id="room-creator"></p>
 
         <div id="chatlog">
-
         </div>
 
         <div id="send-message">
@@ -208,12 +227,16 @@
         
 
         <div id="list-Users">
-          <p>users in chatroom</p>
+          <p>Users in chatroom:</p>
           <ul id="userList">
-
           </ul>
-          
-
+       </div>
+       <div id="creatorOnly">
+         <input type="text" id="banUser">
+         <button onclick="banUser()">Ban User </button>
+         <br>
+         <input type="text" id="kickOut">
+         <button onclick="kickOut()"> Kick Out User </button>
        </div>
     </div>
 
