@@ -149,6 +149,7 @@
       const kickUser=document.getElementById("kickOut").value;
       document.getElementById("kickOut").value="";
       socketio.emit("kickOut",{kickUser:kickUser});
+      socketio.emit("update_room_users");
       socketio.on("show_users",function(data){
           showusers(data["usersArray"]);
         });
@@ -156,8 +157,12 @@
      function banUser(){
        const banUser=document.getElementById("banUser").value;
        document.getElementById("banUser").value="";
+       socketio.emit("update_room_users");
        socketio.emit("banUser",{banUser:banUser});
-       
+       socketio.on("show_users",function(data){
+          showusers(data["usersArray"]);
+        });
+     
      }
     
 
