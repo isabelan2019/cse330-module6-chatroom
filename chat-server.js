@@ -174,7 +174,6 @@ io.sockets.on("connection", function (socket) {
             socket.emit("success",{success:false, message:"Room name already exists"});
         }
         else {
-          //  console.log(chatrooms.includes(roomObject));
             chatrooms.push(roomObject);
             socket.emit("success",{success:true});
             io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
@@ -183,33 +182,13 @@ io.sockets.on("connection", function (socket) {
             //get nickname
             for(let i in users_online){
                 if(users_online[i].id==socket.id){
-                    //retrieve the nickname based on the userid
-                    //socket_nickname=users_online[i].nickname;
+                 
                     //set the inRoom attribute to the room currently in
                     users_online[i].inRoom=data["room_name"];
                 }
             }
 
-            // const roomsIn=socket.rooms;
-            // let iterator =socket.rooms.values();
-            // let currentRoom=iterator.next().value;
-            // let currentRoomName = null;
-            // let hostinroom = new Array();
-            // hostinroom.push(socket_nickname);
-            //add creator to the usersInRoom array 
-            // for (let i in chatrooms){
-            //     if(chatrooms[i].roomName==data["room_name"]){
-            //         chatrooms[i].usersInRoom.push(socket_nickname);
-            //         //currentRoomName = chatrooms[i].roomName;
-            //     }
-            // }
-            // // console.log(chatrooms);
-            // io.in(currentRoom).emit("show_users", {usersArray:hostinroom})
-
-            //give chatroom info
-            // io.in(currentRoom).emit("in_chatroom", {room:data["room_name"], creator:socket_nickname})
-            //creator privileges 
-            // io.in(currentRoom).emit("creator_privileges", {iscreator: true})
+           
         let room_creator=null;
         let creator_nickname=null;
         let socket_nickname=null;
@@ -249,9 +228,7 @@ io.sockets.on("connection", function (socket) {
    
     //This callback runs whenever a user joins the new chatroom
     socket.on('joined_room', function(data){
-        // const roomsIn=socket.rooms;
-        // let iterator =socket.rooms.values();
-        // let currentRoom=iterator.next().value;
+
         let currentRoom=null;
         for(let i in users_online){
             if(socket.id==users_online[i].id){
@@ -268,59 +245,99 @@ io.sockets.on("connection", function (socket) {
         //         users_online.inRoom=null;
         //     }
         // }
-        // console.log(roomsIn);
-        // console.log(currentRoom);
-        //console.log(data["room_name"]);
 
         //join socket to the given room 
         console.log("Info received: " + data["room_name"]);
         for(let i in chatrooms){
             if(chatrooms[i].roomName==data["room_name"]){
-                let bannedUsersArray=chatrooms[i].bannedUsers
-                for(let c in bannedUsersArray){
-                    if(socket.id==bannedUsersArray[c]){
-                        socket.emit("success",{success:false,message:"You are banned from this chat room."});
-                        exit;
+                let bannedUsersArray=chatrooms[i].bannedUsers;
+                if(bannedUsersArray.length>0){
+                    for(let c in bannedUsersArray){
+                        if(socket.id==bannedUsersArray[c]){
+                            socket.emit("success",{success:false,message:"You are banned from this chat room."});
+                        }
+                        else{
+                            socket.join(data["room_name"]);
+                            //set inRoom attribute of socket to the current room
+                            for (let i in users_online){
+                                if(socket.id==users_online[i].id){
+                                    //set inRoom attribute of user to current room (button clicked)
+                                    users_online[i].inRoom=data["room_name"];
+                                    console.log("New room: "+ users_online[i].inRoom);
+                                }
+                            }
+                            //update array of clients in a room
+                            //const usersInRoom=io.in(data["room_name"]).allSockets();
+                            //console.log(usersInRoom);
+                            // for (let i in chatrooms){
+                            //     if(chatrooms[i].roomName==data["room_name"]){
+                            //         chatrooms[i].usersInRoomSet=usersInRoom;
+                            //     }
+                            // }
+                            
+                            let room_creator=null;
+                            let creator_nickname=null;
+                            for(let i in chatrooms){
+                                if(chatrooms[i].roomName==data["room_name"]){
+                                    room_creator=chatrooms[i].creator;
+                                }
+                            }
+                            for(let i in users_online){
+                                if(room_creator==users_online[i].id){
+                                    creator_nickname=users_online[i].nickname;
+                                }
+                            }
+                            io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
+                            
+                            console.log("JOIN ROOM Chatrooms: ");
+                            console.log(chatrooms);
+                            console.log("JOIN ROOM Users online: ");
+                            console.log(users_online);
+                        }
                     }
                 }
+                else{
+                    socket.join(data["room_name"]);
+                    //set inRoom attribute of socket to the current room
+                    for (let i in users_online){
+                        if(socket.id==users_online[i].id){
+                            //set inRoom attribute of user to current room (button clicked)
+                            users_online[i].inRoom=data["room_name"];
+                            console.log("New room: "+ users_online[i].inRoom);
+                        }
+                    }
+                    //update array of clients in a room
+                    //const usersInRoom=io.in(data["room_name"]).allSockets();
+                    //console.log(usersInRoom);
+                    // for (let i in chatrooms){
+                    //     if(chatrooms[i].roomName==data["room_name"]){
+                    //         chatrooms[i].usersInRoomSet=usersInRoom;
+                    //     }
+                    // }
+                    
+                    let room_creator=null;
+                    let creator_nickname=null;
+                    for(let i in chatrooms){
+                        if(chatrooms[i].roomName==data["room_name"]){
+                            room_creator=chatrooms[i].creator;
+                        }
+                    }
+                    for(let i in users_online){
+                        if(room_creator==users_online[i].id){
+                            creator_nickname=users_online[i].nickname;
+                        }
+                    }
+                    io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
+                    
+                    console.log("JOIN ROOM Chatrooms: ");
+                    console.log(chatrooms);
+                    console.log("JOIN ROOM Users online: ");
+                    console.log(users_online);
+                }
+                
             }
         }
-        socket.join(data["room_name"]);
-        //set inRoom attribute of socket to the current room
-        for (let i in users_online){
-            if(socket.id==users_online[i].id){
-                //set inRoom attribute of user to current room (button clicked)
-                users_online[i].inRoom=data["room_name"];
-                console.log("New room: "+ users_online[i].inRoom);
-            }
-        }
-        //update array of clients in a room
-        //const usersInRoom=io.in(data["room_name"]).allSockets();
-        //console.log(usersInRoom);
-        // for (let i in chatrooms){
-        //     if(chatrooms[i].roomName==data["room_name"]){
-        //         chatrooms[i].usersInRoomSet=usersInRoom;
-        //     }
-        // }
-        
-        let room_creator=null;
-        let creator_nickname=null;
-        for(let i in chatrooms){
-            if(chatrooms[i].roomName==data["room_name"]){
-                room_creator=chatrooms[i].creator;
-            }
-        }
-        for(let i in users_online){
-            if(room_creator==users_online[i].id){
-                creator_nickname=users_online[i].nickname;
-            }
-        }
-        io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
-        
-        console.log("JOIN ROOM Chatrooms: ");
-        console.log(chatrooms);
-        console.log("JOIN ROOM Users online: ");
-        console.log(users_online);
+       
        
       
         
