@@ -4,13 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
+    <link rel="stylesheet" type="text/css" href="client.css">
     <script src="/socket.io/socket.io.js"></script>
     <script type ="text/javascript">
       var socketio = io.connect();
       //send message to server
       function sendMessage(){
+        var sendTo = document.getElementById('primsgSelect').value;
+        console.log(sendTo);
+
         var msg = document.getElementById("message_input").value;
-        socketio.emit("message_to_server", {message: msg});
+        if (sendTo = "Everyone") {
+          socketio.emit("message_to_server", {message: msg});
+        }
+        else {
+          socketio.emit("message_to_server", {message: msg, to: sendTo});
+        }
       }
       //receive message from server and append 
       socketio.on("message_to_client",function(data) {
@@ -116,27 +125,55 @@
           document.getElementById("room-name").innerText = "Chatroom: "+ data["room"];
         });
       }
+      socketio.on("in_chatroom",function(data){
+          console.log("Creator: " + data["creator"] + " Room: " + data["room"]);
+          document.getElementById("room-creator").innerText = "Room created by "+ data["creator"];
+          document.getElementById("room-name").innerText = "Chatroom: "+ data["room"];
+        });
 
       function showusers(data) {
         document.getElementById("userList").innerHTML=" ";
-        
+
+        //make a dropdown option for who to send message to 
+        let primsgLabel = document.createElement("label");
+        primsgLabel.setAttribute("for","primsgSelect");
+        primsgLabel.innerText = "Send message to: ";
+        let primsgDropdown = document.createElement("select");
+        primsgDropdown.id = "primsgSelect";
+
+        let msgEveryone = document.createElement("option");
+        msgEveryone.innerText = "Everyone";
+        primsgDropdown.appendChild(msgEveryone);  
+        //everyone has NO value -- if value--null, emit to room. if value exists, emit to user
+
+
+
         //shows users in the room when joined 
-        //(should be called when a host makes and when someone joins)
+        //also adds username to dropdown 
         console.log(data);
         //let usertext = "users ";
         for (let i in data) {
           
+          //list of users
           let newuser = document.createElement("li");
           newuser.innerText = data[i];
-          let privatemsg = document.createElement("button");
-          privatemsg.innerText = "private message";
-          privatemsg.id=data[i];
-          privatemsg.setAttribute("class","pm");
-          newuser.appendChild(privatemsg);
           document.getElementById("userList").appendChild(newuser);
+
           
+          //dropdown of users
+          let msgUser = document.createElement("option");
+          msgUser.innerText = data[i];
+          msgUser.setAttribute("value",data[i]);
+          primsgDropdown.appendChild(msgUser);  
          
         }
+
+
+        //adds the dropdown next to the message input
+        document.getElementById("send-message").prepend(primsgDropdown);
+        document.getElementById("send-message").prepend(primsgLabel);
+
+
       }
 
      socketio.on("creator_privileges",function(data){
@@ -157,8 +194,8 @@
      function banUser(){
        const banUser=document.getElementById("banUser").value;
        document.getElementById("banUser").value="";
-       socketio.emit("update_room_users");
        socketio.emit("banUser",{banUser:banUser});
+       socketio.emit("update_room_users");
        socketio.on("show_users",function(data){
           showusers(data["usersArray"]);
         });
@@ -226,6 +263,7 @@
         </div>
 
         <div id="send-message">
+
           <input type="text" id="message_input" required/>
           <button onclick="sendMessage()">Send</button>
         </div>

@@ -6,6 +6,8 @@ const { exit } = require("process");
 
 const port = 3456;
 const file = "client.html";
+const cssFile = "client.css";
+
 // Listen for HTTP connections.  This is essentially a miniature static file server that only serves our one file, client.html, on port 3456:
 const server = http.createServer(function (req, res) {
     // This callback runs when a new connection is made to our HTTP server.
@@ -17,8 +19,23 @@ const server = http.createServer(function (req, res) {
         res.writeHead(200);
         res.end(data);
     });
+
+    fs.readFile(cssFile, function (err, data) {
+        // This callback runs when the client.css file has been read from the filesystem.
+
+        if (err) return res.writeHead(500);
+        res.writeHead(200);
+        res.end(data);
+    });
+
+
 });
 server.listen(port);
+
+//css
+const path = require('path');
+
+
 //initialize Array of all users online
 let users_online = new Array();
 //initialize Array of all chatrooms available
@@ -197,7 +214,7 @@ io.sockets.on("connection", function (socket) {
         console.log("CREATE ROOM Users online: ");
         console.log(users_online);
 
-        //check for creator privileges
+        
 
     });
    
