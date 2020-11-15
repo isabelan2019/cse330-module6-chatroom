@@ -153,7 +153,17 @@ io.sockets.on("connection", function (socket) {
     //This callback runs when the server receives a new chatroom name
     socket.on('room_name', function(data){
         //create chatroom JSON object 
-        const roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:new Array(), password:null, bannedUsers:new Array()};
+        let roomObject=null;
+        console.log("room password" + data["room_password"]);
+
+        if (data["room_password"] != null){
+            //password exists 
+            roomObject={roomName: data["room_name"],roomPassword:data["room_password"],creator:socket.id, usersInRoom:new Array(), password:null, bannedUsers:new Array()};
+        }
+        else  {
+            roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:new Array(), password:null, bannedUsers:new Array()};
+        }
+
         console.log("Made a new room: ");
         console.log(roomObject); 
 

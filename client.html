@@ -62,14 +62,20 @@
       }
       //CREATE PRIVATE CHATROOM
       function createPrivateRoom(){
-          const roomName = document.getElementById("chatroom_name").value;
+          const roomName = document.getElementById("private_name").value;
           console.log(roomName);
-          const roomPassword=document.getElementById("chatroom_password").value;
+          const roomPassword=document.getElementById("private_password").value;
           //sends to server room name and password
-          socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
+          if (document.getElementById("private_name").value.length==0 || document.getElementById("private_password").value.length==0){
+            alert("Empty inputs");
+          }
+          else {
+            socketio.emit("room_name",{room_name: roomName, room_password: roomPassword});
+          }
+          socketio.on("show_users",function(data){
+            showusers(data["usersArray"]);
+          });
           //socketio.emit("show_room_info",{room_name: roomName});
-
-          //hears from server if their room was succesfully created 
           
       }
 
