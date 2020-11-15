@@ -40,6 +40,7 @@ server.listen(port);
 
 //css
 const path = require('path');
+const { PRIORITY_ABOVE_NORMAL } = require("constants");
 
 
 //initialize Array of all users online
@@ -537,6 +538,68 @@ io.sockets.on("connection", function (socket) {
                 console.log(chatrooms);
             }
         }
+    });
+
+    socket.on("change_creator", function(data){
+        console.log("new creator: "+ data["newCreator"]);
+
+        let currentRoom=null;
+        for(let i in users_online){
+            if(users_online[i].id==socket.id){
+                currentRoom=users_online[i].inRoom;
+            }
+        }
+        console.log("current room : "+ currentRoom);
+        //data["newCreator"]
+
+        //if user exists in room
+        let isUserIn =null;
+        let currentcreator=null;
+        for (i in chatrooms) {
+            for (j in chatrooms[i].usersInRoom){
+                if (chatrooms[i].usersInRoom[j]==data["newCreator"]){
+                    isUserIn="yes";
+                    currentcreator = chatrooms[i].creator;
+                }
+            }
+            
+        }
+        console.log("creator of room is " + currentcreator);
+        let newCreatorid=null;
+        if (isUserIn=="yes"){
+            //user exists in room so get id 
+            for (i in users_online) {
+                if (users_online[i].nickname=data["newCreator"]){
+                    newCreatorid=users_online[i].id;
+                }
+            }
+            //if current user is creator then change 
+            //let creator = null;
+            if (currentcreator==socket.id) {
+                for (i in chatrooms){
+                    if (chatrooms[i].roomName == currentRoom){
+                        chatrooms[i].creator=newCreatorid;
+                        console.log("updated room: "+ chatrooms[i].creator);
+                    }
+                }
+                //new creator has privileges displayed
+                let creatorID=io.sockets.sockets.get(newCreatorid);
+                creatorID.emit("creator_privileges",{isCreator:true} );
+
+                //update show room info for everyone in room 
+                io.in(currentRoom).emit("in_chatroom", {room: currentRoom, creator:data["newCreator"]});
+
+            }
+            else {
+                socket.emit("success",{success:false, message: "Only creators of the chat can reassign privileges."});
+            }
+
+        }
+        else {
+            socket.emit("success",{success:false, message:"user is not in room"});
+        }
+
+        
     });
     
 
