@@ -88,7 +88,15 @@
           let chatroomName=document.createTextNode(data["roomsArray"][i].roomName);
           chatroomButton.appendChild(chatroomName);
           chatroomButton.id=data["roomsArray"][i].roomName;
-          chatroomButton.setAttribute('class', 'chatroom')
+          console.log(data["roomsArray"][i].roomPassword);
+          if (data["roomsArray"][i].roomPassword==undefined) {
+            //no password
+            chatroomButton.setAttribute('class', 'chatroom');
+          }
+          else {
+            chatroomButton.setAttribute('class', 'private');
+          }
+          //chatroomButton.setAttribute('class', 'chatroom');
           document.getElementById("join-Rooms").appendChild(chatroomButton);
           //add event listeners to open a chatroom if the chatroom button is clicked
           document.getElementById(chatroomButton.id).addEventListener("click",openChatRoom,false);
@@ -101,7 +109,13 @@
         console.log(event.target.id);
         document.getElementById("chatlog").innerText="";
         //when a button is clicked, send the name of the room
-        socketio.emit("joined_room",{room_name:event.target.id});
+        let password ="";
+        if (event.target.class ="private"){
+          let passwordPrompt = prompt("please enter the room password"," ");
+          password = passwordPrompt;
+        }
+        console.log(password);
+        socketio.emit("joined_room",{room_name:event.target.id, room_password: password});
         socketio.emit("update_room_users");
         //show all users in the chatroom
         socketio.on("show_users",function(data){

@@ -257,34 +257,57 @@ io.sockets.on("connection", function (socket) {
                             socket.emit("banned",{banned:true,message:"You are banned from this chat room."});
                         }
                         else{
-                            socket.join(data["room_name"]);
-                            //set inRoom attribute of socket to the current room
-                            for (let i in users_online){
-                                if(socket.id==users_online[i].id){
-                                    //set inRoom attribute of user to current room (button clicked)
-                                    users_online[i].inRoom=data["room_name"];
-                                    console.log("New room: "+ users_online[i].inRoom);
+                            //check password --TO DO 
+                            let passwordcheck=null;
+                            if (chatrooms[i].roomPassword != null) {
+                                //has a password so check 
+                                if (chatrooms[i].roomPassword == data["room_password"]){
+                                    passwordcheck="true";
                                 }
+                                else {
+                                    passwordcheck="false";
+                                }
+
+                            }
+                            console.log("password check "+ passwordcheck);
+                            // == data["room_password"]) {
+                            // }
+                            if (passwordcheck!="false"){
+                                socket.join(data["room_name"]);
+                                //set inRoom attribute of socket to the current room
+                                for (let i in users_online){
+                                    if(socket.id==users_online[i].id){
+                                        //set inRoom attribute of user to current room (button clicked)
+                                        users_online[i].inRoom=data["room_name"];
+                                        console.log("New room: "+ users_online[i].inRoom);
+                                    }
+                                }
+                                
+                                let room_creator=null;
+                                let creator_nickname=null;
+                                for(let i in chatrooms){
+                                    if(chatrooms[i].roomName==data["room_name"]){
+                                        room_creator=chatrooms[i].creator;
+                                    }
+                                }
+                                for(let i in users_online){
+                                    if(room_creator==users_online[i].id){
+                                        creator_nickname=users_online[i].nickname;
+                                    }
+                                }
+                                io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
+                                
+                                console.log("JOIN ROOM Chatrooms: ");
+                                console.log(chatrooms);
+                                console.log("JOIN ROOM Users online: ");
+                                console.log(users_online);
+
+                            }
+                            else {
+                                socket.emit("success",{success:false,message:"wrong password."});
+
                             }
                             
-                            let room_creator=null;
-                            let creator_nickname=null;
-                            for(let i in chatrooms){
-                                if(chatrooms[i].roomName==data["room_name"]){
-                                    room_creator=chatrooms[i].creator;
-                                }
-                            }
-                            for(let i in users_online){
-                                if(room_creator==users_online[i].id){
-                                    creator_nickname=users_online[i].nickname;
-                                }
-                            }
-                            io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
-                            
-                            console.log("JOIN ROOM Chatrooms: ");
-                            console.log(chatrooms);
-                            console.log("JOIN ROOM Users online: ");
-                            console.log(users_online);
                         }
                     }
                 }
