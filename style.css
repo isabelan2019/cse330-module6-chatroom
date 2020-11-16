@@ -1,18 +1,56 @@
 body {
-    background-color:white;
+    background-color:#e8ddb5; 
+    color:#4a5759;
+    font-family: "Courier New", Courier, monospace;
+    display:flex;
+    flex-direction: row;
 }
 #create-chat{
     display:none;
 }
+#createroom{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#createprivateroom{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#chatroomsBar{
+    margin:20px;
+    padding:20px;
+}
+#roomsBar{
+    margin:20px;
+    padding:20px;
+}
+.boldedText{
+    font-weight:bolder;
+}
 #join-Rooms{
     display:none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 #lobby{
     display:none;
+    margin-top:20px;
 }
 #in-room{
     display:none;
 }
 #creatorOnly{
     display:none;
+}
+button{
+    border-radius: 20px;
+    border-color:#92b6b1;
+    background-color: #92b6b1;
+    color:#4a5759;
+    font-family:"Courier New", Courier, monospace;
 }

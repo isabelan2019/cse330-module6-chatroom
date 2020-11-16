@@ -144,6 +144,8 @@ io.sockets.on("connection", function (socket) {
     });
     // If a client disconnects, removes from users_online array
     socket.on('disconnect',function(data){
+        io.sockets.emit("disconnectedSocket");
+        //check if client disconnects and if they're the last ones, then delete room
         for (let i in users_online){
             if(users_online[i].id==socket.id){
                 users_online.splice(i,1);
@@ -197,37 +199,34 @@ io.sockets.on("connection", function (socket) {
             }
 
            
-        let room_creator=null;
-        let creator_nickname=null;
+            let room_creator=null;
+            let creator_nickname=null;
 
-        for(let i in chatrooms){
-            if(chatrooms[i].roomName==data["room_name"]){
-                room_creator=chatrooms[i].creator;
+            for(let i in chatrooms){
+                if(chatrooms[i].roomName==data["room_name"]){
+                    room_creator=chatrooms[i].creator;
+                }
             }
-        }
-        for(let i in users_online){
-            //pull the creator nickname
-            if(room_creator==users_online[i].id){
-                creator_nickname=users_online[i].nickname;
+            for(let i in users_online){
+                //pull the creator nickname
+                if(room_creator==users_online[i].id){
+                    creator_nickname=users_online[i].nickname;
+                }
+                
             }
+            //check if creator is the user
+            if(room_creator==socket.id){
+                socket.emit("creator_privileges",{isCreator:true});
+                console.log("User is creator");
+            }
+            console.log("Check creator_name server-side: "+creator_nickname);
+            io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
             
-        }
-        //check if creator is the user
-        if(room_creator==socket.id){
-            socket.emit("creator_privileges",{isCreator:true});
-            console.log("User is creator");
-        }
-        console.log("Check creator_name server-side: "+creator_nickname);
-        io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
-           
         }
         console.log("CREATE ROOM Chatrooms: ");
         console.log(chatrooms);
         console.log("CREATE ROOM Users online: ");
         console.log(users_online);
-
-        
-
     });
    
     //This callback runs whenever a user joins the new chatroom

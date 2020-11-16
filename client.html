@@ -10,6 +10,10 @@
   <script>
     var socketio = io.connect();
 
+    socketio.on("disconnectedSocket",function(data){
+      socketio.emit("update_room_users");
+      socketio.emit("checkRoomsEmpty");
+    });
      //receive message from server and append 
     socketio.on("message_to_client", function (data) {
       console.log(data);
@@ -25,6 +29,7 @@
     //SHOW ALL ROOMS
     socketio.on("show_rooms", function (data) {
       document.getElementById("join-Rooms").innerText = "";
+      document.getElementById("join-Rooms").appendChild(document.createTextNode("Open Chat Rooms:"));
       for (let i in data["roomsArray"]) {
         document.getElementById("join-Rooms").appendChild(document.createElement("br"));
         let chatroomButton = document.createElement("button");
@@ -56,7 +61,7 @@
     socketio.on("in_chatroom", function (data) {
       console.log("Creator: " + data["creator"] + " Room: " + data["room"]);
       document.getElementById("room-creator").innerText = "Room created by " + data["creator"];
-      document.getElementById("room-name").innerText = "Chatroom: " + data["room"];
+      document.getElementById("room-name").innerText = "Chat Room: " + data["room"];
     });
 
     //GRANTS creator privileges
@@ -105,7 +110,7 @@
     //SUCCESS OR FAILURE MESSAGES
     socketio.on("success", function (data) {
       if (data["success"] == true) {
-        alert("action successful: ");
+        alert("action successful");
       }
       else {
         alert("unsuccessful: " + data["message"]);
@@ -138,7 +143,7 @@
       document.getElementById("nickname").value = "";
       document.getElementById("create-chat").style.display="block";
       document.getElementById("lobby").style.display="block";
-      document.getElementById("join-Rooms").style.display="block";
+      document.getElementById("join-Rooms").style.display="flex";
       document.getElementById("create-nickname").style.display="none";
 
     }
@@ -154,13 +159,13 @@
         //sends to server room name and password
         socketio.emit("room_name", { room_name: roomName });
         socketio.emit("update_room_users");
+        socketio.emit("checkRoomsEmpty");
         //hears from server if their room was succesfully created 
         // socketio.on("show_users", function (data) {
         //   showusers(data["usersArray"]);
         // });
         document.getElementById("chatlog").innerText = "";
         //show chatroom details 
-        console.log("Calling: showroominfo");
         showRoomInfo();
         document.getElementById("chatroom_name").value = "";
         document.getElementById("in-room").style.display="block";
@@ -180,6 +185,8 @@
       }
       else {
         socketio.emit("room_name", { room_name: roomName, room_password: roomPassword });
+        socketio.emit("update_room_users");
+        socketio.emit("checkRoomsEmpty");
         document.getElementById("chatlog").innerText = "";
         showRoomInfo();
         // socketio.on("show_users", function (data) {
@@ -189,11 +196,9 @@
         document.getElementById("private_name").value = "";
         document.getElementById("private_password").value = "";
         document.getElementById("in-room").style.display="block";
+        document.getElementById("chatlog").innerText="";
 
       }
-     
-      
-
 
     }
 
@@ -214,6 +219,7 @@
       console.log(password);
       socketio.emit("joined_room", { room_name: event.target.id, room_password: password });
       socketio.emit("update_room_users");
+      socketio.emit("checkRoomsEmpty");
       //show all users in the chatroom
       // socketio.on("show_users", function (data) {
       //   showusers(data["usersArray"]);
@@ -224,7 +230,7 @@
       document.getElementById("in-room").style.display="block";
 
     }
-    socketio.emit("checkRoomsEmpty");
+  
 
 
     //SHOW room name and creator/owner
@@ -341,13 +347,14 @@
 
 <body>
   <div id="create-nickname">
-    <label for="nickname">What's your nickname? </label>
+    <label for="nickname">Sign on with a nickname to begin chatting: </label>
     <input type="text" id="nickname" required>
     <button onclick="addUser()">Sign On</button>
   </div>
+  <div id="chatroomsBar">
   <div id="create-chat"> 
     <div id="createroom">
-      <p>Create Chat Room</p>
+      <p class="boldedText">Create Chat Room</p>
       <label for="chatroom_name">New Chat Room Name: </label>
       <input type="text" id="chatroom_name" required>
       <!-- <label for="chatroom_password">New Chat Room Password: </label>
@@ -355,23 +362,26 @@
       <button onclick="createRoom()">Create Room</button>
     </div>
     <div id="createprivateroom" >
-      <p>Create Private Chat Room</p>
+      <p class="boldedText">Create Private Chat Room</p>
       <label for="private_name">New Chat Room Name: </label>
       <input type="text" id="private_name" required>
       <label for="private_password">New Chat Room Password: </label>
       <input type="password" id="private_password" required>
       <button onclick="createPrivateRoom()">Create Private Room</button>
+      <br>
     </div>
 
   </div>
 
 
   <div id="join-Rooms">
-    <p>Open Chatrooms: </p>
+    
   </div>
+</div>
   <div id="lobby">
     <p> Join or create a chatroom. </p>
   </div>
+<div id="roomsBar">
   <div id="in-room">
     <h1 id="room-name"></h1>
     <p id="room-creator"></p>
@@ -387,27 +397,24 @@
       <input type="text" id="message_input" required />
       <button onclick="sendMessage()">Send</button>
     </div>
-
-
-      <p>Users in chatroom:</p>
+      <p class="boldedText">Users in chatroom:</p>
       <ul id="userList">
       </ul>
     </div>
     <div id="creatorOnly">
+      <button onclick="deleteRoom()"> Delete Room </button>
+      <br>
       <input type="text" id="banUser">
       <button onclick="banUser()">Ban User </button>
       <br>
       <input type="text" id="kickOut">
       <button onclick="kickOut()"> Kick Out User </button>
       <br>
-      <button onclick="deleteRoom()"> Delete Room </button>
-      <br>
       <input type="text" id="changeCreator">
       <button onclick="changeCreator()">Change Creator</button>
-
     </div>
   </div>
-
+</div>
 </body>
 
 </html>
