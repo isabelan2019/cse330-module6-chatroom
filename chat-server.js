@@ -152,6 +152,40 @@ io.sockets.on("connection", function (socket) {
             }
         }
     });
+    socket.on("checkPrivileges",function(data){
+        //look through all the chatrooms 
+        for (let c in chatrooms){
+            //retrieve their creator
+            let creator=chatrooms[c].creator;
+            console.log("check creator:" + creator);
+            //check if their creator still exists
+            let creatorExists=false;
+            for(let i in users_online){
+                if(users_online[i].id==creator){
+                    creatorExists=true;
+                }
+            }
+            //if creator does not exist anymore 
+            
+            if(creatorExists==false){
+                let newCreatorName=chatrooms[c].usersInRoom[0];
+                console.log("new creator name: " + newCreatorName);
+                //pass on creator privileges
+                let newCreatorid=null;
+                for (let i in users_online){
+                    if (newCreatorName==users_online[i].nickname){
+                        newCreatorid=users_online[i].id;
+                    }
+                }
+                chatrooms[c].creator = newCreatorid;
+                let creatorSocket=io.sockets.sockets.get(newCreatorid);
+                creatorSocket.emit("creator_privileges",{isCreator:true} );
+
+                //update show room info for everyone in room 
+                io.in(chatrooms[c].roomName).emit("in_chatroom", {room: chatrooms[c].roomName, creator:newCreatorName});
+            }
+        }
+    })
    
     
     //This callback runs when the server receives a new chatroom name
