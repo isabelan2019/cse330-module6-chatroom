@@ -6,19 +6,19 @@ const { exit } = require("process");
 
 const port = 3456;
 const file = "client.html";
-const cssFile = "client.css";
+const cssFile = "style.css";
 
 // Listen for HTTP connections.  This is essentially a miniature static file server that only serves our one file, client.html, on port 3456:
 const server = http.createServer(function (req, res) {
     // This callback runs when a new connection is made to our HTTP server.
-
     let filePath = path.join(
         __dirname, 
         req.url === "/" ? "client.html" : req.url
+
     );
    
 
-    fs.readFile(file, function (err, data) {
+    fs.readFile(filePath, function (err, data) {
         // This callback runs when the client.html file has been read from the filesystem.
 
         if (err) return res.writeHead(500);
@@ -57,6 +57,7 @@ const io = socketio.listen(server);
 
 // This callback runs when a new Socket.IO connection is established.
 io.sockets.on("connection", function (socket) {
+    
     io.sockets.emit("show_rooms",{roomsArray:chatrooms,index:chatrooms.length});
  
     // This callback runs when the server receives a new message from the client.
@@ -445,6 +446,7 @@ io.sockets.on("connection", function (socket) {
             
         
     });
+
     socket.on("banUser",function(data){
         let currentRoom=null;
         let creator=null;
@@ -492,6 +494,7 @@ io.sockets.on("connection", function (socket) {
         }
         
     });
+
     socket.on("delete",function(data){
         //retrieve the current room
         let currentRoom=null;
