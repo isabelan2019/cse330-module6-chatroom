@@ -1,3 +1,18 @@
 body {
-    background-color: yellow;
+    background-color:white;
+}
+#create-chat{
+    display:none;
+}
+#join-Rooms{
+    display:none;
+}
+#lobby{
+    display:none;
+}
+#in-room{
+    display:none;
+}
+#creatorOnly{
+    display:none;
 }
