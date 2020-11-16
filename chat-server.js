@@ -198,7 +198,6 @@ io.sockets.on("connection", function (socket) {
            
         let room_creator=null;
         let creator_nickname=null;
-        let socket_nickname=null;
 
         for(let i in chatrooms){
             if(chatrooms[i].roomName==data["room_name"]){
@@ -210,13 +209,10 @@ io.sockets.on("connection", function (socket) {
             if(room_creator==users_online[i].id){
                 creator_nickname=users_online[i].nickname;
             }
-            //pull the socket nickname
-            if(socket.id==users_online[i].id){
-                socket_nickname=users_online[i].nickname;
-            }
+            
         }
         //check if creator is the user
-        if(creator_nickname==socket_nickname){
+        if(room_creator==socket.id){
             socket.emit("creator_privileges",{isCreator:true});
             console.log("User is creator");
         }
@@ -295,6 +291,13 @@ io.sockets.on("connection", function (socket) {
                                     if(room_creator==users_online[i].id){
                                         creator_nickname=users_online[i].nickname;
                                     }
+                                   
+                                }
+                                if(socket.id==room_creator){
+                                    socket.emit("creator_privileges",{isCreator:true});
+                                }
+                                else{
+                                    socket.emit("creator_privileges",{isCreator:false});
                                 }
                                 io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
                                 
@@ -349,6 +352,13 @@ io.sockets.on("connection", function (socket) {
                             if(room_creator==users_online[i].id){
                                 creator_nickname=users_online[i].nickname;
                             }
+                            
+                        }
+                        if(socket.id==room_creator){
+                            socket.emit("creator_privileges",{isCreator:true});
+                        }
+                        else{
+                            socket.emit("creator_privileges",{isCreator:false});
                         }
                         io.in(data["room_name"]).emit("in_chatroom", {room: data["room_name"], creator:creator_nickname});
                         

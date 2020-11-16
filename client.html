@@ -198,6 +198,10 @@
       if (data["isCreator"] == true) {
         document.getElementById("creatorOnly").style.display = "block";
       }
+      if(data["isCreator"]==false){
+        document.getElementById("creatorOnly").style.display = "none";
+
+      }
     });
 
 
