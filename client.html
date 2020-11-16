@@ -13,6 +13,7 @@
     socketio.on("disconnectedSocket",function(data){
       socketio.emit("update_room_users");
       socketio.emit("checkRoomsEmpty");
+      socketio.emit("checkPrivileges");
     });
      //receive message from server and append 
     socketio.on("message_to_client", function (data) {
