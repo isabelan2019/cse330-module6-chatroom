@@ -114,7 +114,8 @@
       document.getElementById("chatlog").innerText = "";
       //when a button is clicked, send the name of the room
       let password = "";
-      if (event.target.class == "private") {
+      console.log(event.target.className);
+      if (event.target.className == "private") {
         let passwordPrompt = prompt("please enter the room password");
 
         password = passwordPrompt;
@@ -254,7 +255,7 @@
         
       }
       document.getElementById("changeCreator").value = "";
-
+      document.getElementById("creatorOnly").style.display="none";
 
     }
 
