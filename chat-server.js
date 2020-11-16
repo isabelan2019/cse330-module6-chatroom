@@ -159,10 +159,10 @@ io.sockets.on("connection", function (socket) {
 
         if (data["room_password"] != null){
             //password exists 
-            roomObject={roomName: data["room_name"],roomPassword:data["room_password"],creator:socket.id, usersInRoom:new Array(), password:null, bannedUsers:new Array()};
+            roomObject={roomName: data["room_name"],roomPassword:data["room_password"],creator:socket.id, usersInRoom:new Array(), bannedUsers:new Array()};
         }
         else  {
-            roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:new Array(), password:null, bannedUsers:new Array()};
+            roomObject={roomName: data["room_name"],creator:socket.id, usersInRoom:new Array(), bannedUsers:new Array()};
         }
 
         console.log("Made a new room: ");
@@ -542,7 +542,7 @@ io.sockets.on("connection", function (socket) {
 
     socket.on("change_creator", function(data){
         console.log("new creator: "+ data["newCreator"]);
-
+        //retrieve current room
         let currentRoom=null;
         for(let i in users_online){
             if(users_online[i].id==socket.id){
@@ -555,10 +555,10 @@ io.sockets.on("connection", function (socket) {
         //if user exists in room
         let isUserIn =null;
         let currentcreator=null;
-        for (i in chatrooms) {
-            for (j in chatrooms[i].usersInRoom){
+        for (let i in chatrooms) {
+            for (let j in chatrooms[i].usersInRoom){
                 if (chatrooms[i].usersInRoom[j]==data["newCreator"]){
-                    isUserIn="yes";
+                    isUserIn=true;
                     currentcreator = chatrooms[i].creator;
                 }
             }
@@ -566,22 +566,25 @@ io.sockets.on("connection", function (socket) {
         }
         console.log("creator of room is " + currentcreator);
         let newCreatorid=null;
-        if (isUserIn=="yes"){
+        if (isUserIn==true){
             //user exists in room so get id 
-            for (i in users_online) {
-                if (users_online[i].nickname=data["newCreator"]){
+            for (let i in users_online) {
+                if (users_online[i].nickname==data["newCreator"]){
                     newCreatorid=users_online[i].id;
                 }
             }
             //if current user is creator then change 
             //let creator = null;
             if (currentcreator==socket.id) {
-                for (i in chatrooms){
+                for (let i in chatrooms){
                     if (chatrooms[i].roomName == currentRoom){
                         chatrooms[i].creator=newCreatorid;
                         console.log("updated room: "+ chatrooms[i].creator);
                     }
                 }
+                console.log("inside if loop: " );
+                console.log( users_online);
+                console.log(chatrooms);
                 //new creator has privileges displayed
                 let creatorID=io.sockets.sockets.get(newCreatorid);
                 creatorID.emit("creator_privileges",{isCreator:true} );
