@@ -284,9 +284,11 @@ io.sockets.on("connection", function (socket) {
                 if(bannedUsersArray.length>0){
                     for(let c in bannedUsersArray){
                         if(socket.id==bannedUsersArray[c]){
+                            console.log("inside if banned");
                             socket.emit("banned",{banned:true,message:"You are banned from this chat room."});
                         }
                         else{
+                            console.log("inside if not banned");
                             //check password
                             //console.log("this room "+chatrooms[i]);
                             let passwordcheck=null;
