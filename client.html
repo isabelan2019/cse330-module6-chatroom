@@ -10,12 +10,12 @@
   <script>
     var socketio = io.connect();
 
-    socketio.on("disconnectedSocket",function(data){
+    socketio.on("disconnectedSocket", function (data) {
       socketio.emit("update_room_users");
       socketio.emit("checkRoomsEmpty");
       socketio.emit("checkPrivileges");
     });
-     //receive message from server and append 
+    //receive message from server and append 
     socketio.on("message_to_client", function (data) {
       console.log(data);
       //Append an HR thematic break and the escaped HTML of the new message
@@ -24,7 +24,7 @@
     });
 
     socketio.on("show_users", function (data) {
-          showusers(data["usersArray"]);
+      showusers(data["usersArray"]);
     });
 
     //SHOW ALL ROOMS
@@ -53,24 +53,26 @@
     });
 
     socketio.on("banned", function (data) {
-        if (data["banned"] == true) {
-          hideRoomInfo();
-          alert("You have been banned from this chat.");
-        }
-      });
+      if (data["banned"] == true) {
+        hideRoomInfo();
+        alert("You have been banned from this chat.");
+      }
+    });
 
     socketio.on("in_chatroom", function (data) {
       console.log("Creator: " + data["creator"] + " Room: " + data["room"]);
       document.getElementById("room-creator").innerText = "Room created by " + data["creator"];
       document.getElementById("room-name").innerText = "Chat Room: " + data["room"];
+      showRoomInfo();
     });
 
     //GRANTS creator privileges
     socketio.on("creator_privileges", function (data) {
+      document.getElementById("creatorOnly").style.display = "none";
       if (data["isCreator"] == true) {
         document.getElementById("creatorOnly").style.display = "block";
       }
-      if(data["isCreator"]==false){
+      if (data["isCreator"] == false) {
         document.getElementById("creatorOnly").style.display = "none";
       }
     });
@@ -104,7 +106,7 @@
       if (data["success"] == true) {
         alert(data["message"]);
         hideRoomInfo();
-        document.getElementById("creatorOnly").style.display="none";
+        document.getElementById("creatorOnly").style.display = "none";
       }
     });
 
@@ -130,7 +132,7 @@
 
       document.getElementById("message_input").value = "";
     }
-   
+
 
     //ADD user to server
     function addUser() {
@@ -142,12 +144,15 @@
         socketio.emit("nickname", { user: nickname });
       }
       document.getElementById("nickname").value = "";
-      document.getElementById("create-chat").style.display="block";
-      document.getElementById("lobby").style.display="block";
-      document.getElementById("join-Rooms").style.display="flex";
-      document.getElementById("create-nickname").style.display="none";
 
     }
+    socketio.on("userSuccess", function (data) {
+      document.getElementById("create-chat").style.display = "block";
+      document.getElementById("lobby").style.display = "block";
+      document.getElementById("join-Rooms").style.display = "flex";
+      document.getElementById("create-nickname").style.display = "none";
+
+    });
 
     //CREATE PUBLIC chat room
     function createRoom() {
@@ -169,10 +174,10 @@
         //show chatroom details 
         showRoomInfo();
         document.getElementById("chatroom_name").value = "";
-        document.getElementById("in-room").style.display="block";
-        document.getElementById("chatlog").innerText="";
+        document.getElementById("in-room").style.display = "block";
+        document.getElementById("chatlog").innerText = "";
 
-        
+
       }
     }
     //CREATE PRIVATE CHATROOM
@@ -196,8 +201,8 @@
         //socketio.emit("show_room_info",{room_name: roomName});
         document.getElementById("private_name").value = "";
         document.getElementById("private_password").value = "";
-        document.getElementById("in-room").style.display="block";
-        document.getElementById("chatlog").innerText="";
+        document.getElementById("in-room").style.display = "block";
+        document.getElementById("chatlog").innerText = "";
 
       }
 
@@ -214,24 +219,22 @@
       console.log(event.target.className);
       if (event.target.className == "private") {
         let passwordPrompt = prompt("please enter the room password");
-
+        
         password = passwordPrompt;
+
       }
       console.log(password);
-      socketio.emit("joined_room", { room_name: event.target.id, room_password: password });
-      socketio.emit("update_room_users");
-      socketio.emit("checkRoomsEmpty");
-      //show all users in the chatroom
-      // socketio.on("show_users", function (data) {
-      //   showusers(data["usersArray"]);
-      // });
-      //show chatroom details 
-      showRoomInfo();
-      
-      document.getElementById("in-room").style.display="block";
 
+      if (password!=null){
+        socketio.emit("joined_room", { room_name: event.target.id, room_password: password });
+        socketio.emit("update_room_users");
+        socketio.emit("checkRoomsEmpty");
+        socketio.emit("checkPrivileges");
+        //showRoomInfo(); 
+      }
+   
     }
-  
+
 
 
     //SHOW room name and creator/owner
@@ -239,7 +242,7 @@
       console.log("Inside show room info");
       document.getElementById("in-room").style.display = "block";
       document.getElementById("lobby").style.display = "none";
-      
+
     }
 
     //APPEND users 
@@ -314,18 +317,18 @@
     //CHANGE CREATOR privileges 
     function changeCreator() {
       const creator_nickname = document.getElementById("changeCreator").value;
-      
+
       //sends to server room name and password
       if (document.getElementById("changeCreator").value.length == 0) {
         alert("Empty inputs");
       }
       else {
         console.log(creator_nickname);
-        socketio.emit("change_creator", {newCreator: creator_nickname});
-        
+        socketio.emit("change_creator", { newCreator: creator_nickname });
+
       }
       document.getElementById("changeCreator").value = "";
-      document.getElementById("creatorOnly").style.display="none";
+      document.getElementById("creatorOnly").style.display = "none";
 
     }
 
@@ -353,51 +356,52 @@
     <button onclick="addUser()">Sign On</button>
   </div>
   <div id="chatroomsBar">
-  <div id="create-chat"> 
-    <div id="createroom">
-      <p class="boldedText">Create Chat Room</p>
-      <label for="chatroom_name">New Chat Room Name: </label>
-      <input type="text" id="chatroom_name" required>
-      <!-- <label for="chatroom_password">New Chat Room Password: </label>
+    <div id="create-chat">
+      <div id="createroom">
+        <p class="boldedText">Create Chat Room</p>
+        <label for="chatroom_name">New Chat Room Name: </label>
+        <input type="text" id="chatroom_name" required>
+        <!-- <label for="chatroom_password">New Chat Room Password: </label>
           <input type="password" id="chatroom_password"> -->
-      <button onclick="createRoom()">Create Room</button>
+        <button onclick="createRoom()">Create Room</button>
+      </div>
+      <div id="createprivateroom">
+        <p class="boldedText">Create Private Chat Room</p>
+        <label for="private_name">New Chat Room Name: </label>
+        <input type="text" id="private_name" required>
+        <label for="private_password">New Chat Room Password: </label>
+        <input type="password" id="private_password" required>
+        <button onclick="createPrivateRoom()">Create Private Room</button>
+        <br>
+      </div>
+
     </div>
-    <div id="createprivateroom" >
-      <p class="boldedText">Create Private Chat Room</p>
-      <label for="private_name">New Chat Room Name: </label>
-      <input type="text" id="private_name" required>
-      <label for="private_password">New Chat Room Password: </label>
-      <input type="password" id="private_password" required>
-      <button onclick="createPrivateRoom()">Create Private Room</button>
-      <br>
+
+
+    <div id="join-Rooms">
+
     </div>
-
   </div>
-
-
-  <div id="join-Rooms">
-    
-  </div>
-</div>
   <div id="lobby">
     <p> Join or create a chatroom. </p>
   </div>
-<div id="roomsBar">
-  <div id="in-room">
-    <h1 id="room-name"></h1>
-    <p id="room-creator"></p>
+  <div id="roomsBar">
+    <div id="in-room">
+      <h1 id="room-name"></h1>
+      <p id="room-creator"></p>
 
-    <div id="chatlog">
-    </div>
-
-    <div id="send-message">
-      <div id="send-private-message">
-
+      <div id="chatlog">
       </div>
 
-      <input type="text" id="message_input" required />
-      <button onclick="sendMessage()">Send</button>
-    </div>
+      <div id="send-message">
+        <div id="send-private-message">
+
+        </div>
+
+        <input type="text" id="message_input" required />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+
       <p class="boldedText">Users in chatroom:</p>
       <ul id="userList">
       </ul>
@@ -415,7 +419,7 @@
       <button onclick="changeCreator()">Change Creator</button>
     </div>
   </div>
-</div>
+  </div>
 </body>
 
 </html>

@@ -136,6 +136,7 @@ io.sockets.on("connection", function (socket) {
         else {
             users_online.push(userObject);
             socket.emit("success",{success:true});
+            socket.emit("userSuccess",{userCreated: true});
 
         }
         console.log("CREATE USERS: ");
@@ -274,9 +275,7 @@ io.sockets.on("connection", function (socket) {
             }
         }
         
-        //leave current room
-        socket.leave(currentRoom);
-
+        
         //join socket to the given room 
         console.log("Info received: " + data["room_password"]);
         for(let i in chatrooms){
@@ -302,6 +301,7 @@ io.sockets.on("connection", function (socket) {
 
                             }
                             if (passwordcheck!="false"){
+                                socket.leave(currentRoom);
                                 socket.join(data["room_name"]);
                                 //set inRoom attribute of socket to the current room
                                 for (let i in users_online){
@@ -365,6 +365,7 @@ io.sockets.on("connection", function (socket) {
                     }
                     console.log("password check "+ passwordcheck);
                     if (passwordcheck!="false") {
+                        socket.leave(currentRoom);
                         socket.join(data["room_name"]);
                         //set inRoom attribute of socket to the current room
                         for (let i in users_online){
