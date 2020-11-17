@@ -1,0 +1,80 @@
+body {
+    background-color:#e8ddb5; 
+    color:#4a5759;
+    font-family: "Courier New", Courier, monospace;
+    display:flex;
+    flex-direction: row;
+}
+#create-chat{
+    display:none;
+}
+#createroom{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#createprivateroom{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#chatroomsBar{
+    margin:20px;
+    padding:20px;
+}
+#roomsBar{
+    margin:20px;
+    padding:20px;
+    /* display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center; */
+}
+.boldedText{
+    font-weight:bolder;
+}
+#join-Rooms{
+    display:none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#lobby{
+    display:none;
+    margin-top:20px;
+}
+#in-room{
+    display:none;
+    flex-direction: row;
+    /* justify-content: center;
+    align-items: center; */
+    
+}
+#mainColumn {
+    /* margin:20px;
+    padding:20px; */
+    width: 500px;
+}
+#send-message {
+    vertical-align: bottom;
+}
+#rightColumn {
+    margin:20px;
+    padding:20px;
+
+}
+#room-info, #room-creator {
+    text-align: center;
+}
+#creatorOnly{
+    display:none;
+}
+button{
+    border-radius: 25px;
+    border-color:#92b6b1;
+    background-color: #92b6b1;
+    color:#4a5759;
+    font-family:"Courier New", Courier, monospace;
+}
