@@ -30,7 +30,10 @@
     //SHOW ALL ROOMS
     socketio.on("show_rooms", function (data) {
       document.getElementById("join-Rooms").innerText = "";
-      document.getElementById("join-Rooms").appendChild(document.createTextNode("Open Chat Rooms:"));
+      let openRooms=document.createElement("strong");
+      let openRoomsText=document.createTextNode("Open Chat Rooms: ");
+      openRooms.appendChild(openRoomsText);
+      document.getElementById("join-Rooms").appendChild(openRooms);
       for (let i in data["roomsArray"]) {
         document.getElementById("join-Rooms").appendChild(document.createElement("br"));
         let chatroomButton = document.createElement("button");

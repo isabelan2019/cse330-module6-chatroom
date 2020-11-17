@@ -452,6 +452,8 @@ io.sockets.on("connection", function (socket) {
     socket.on("kickOut",function(data){
         let currentRoom=null;
         let creator=null;
+        let isUserIn=null;
+
         for(let i in users_online){
             if(socket.id==users_online[i].id){
                 currentRoom=users_online[i].inRoom;
@@ -462,24 +464,39 @@ io.sockets.on("connection", function (socket) {
                 creator=chatrooms[i].creator;
             }
         }
-        if(socket.id==creator){
-            for(let i in users_online){
-                
-                    if(data["kickUser"]==users_online[i].nickname){
-                        users_online[i].inRoom=null;
-                        let userID=users_online[i].id;
-                        let socketKicked=io.sockets.sockets.get(userID);
-                        socketKicked.leave(currentRoom);
-                        socketKicked.emit("kickSuccess",{success:true,message:"You have been kicked out of the chat."});
-                        socket.emit("success",{success:true, message:"You have successfully kicked this user out of the chat."});
-
-                    }
+        //check if user is in the room
+        for (let i in chatrooms) {
+            for (let j in chatrooms[i].usersInRoom){
+                if (chatrooms[i].usersInRoom[j]==data["kickUser"]){
+                    isUserIn=true;
                 }
+            }
+        }
+    
+        if(isUserIn==true){
+
+        
+            if(socket.id==creator){
+                for(let i in users_online){
+                    
+                        if(data["kickUser"]==users_online[i].nickname){
+                            users_online[i].inRoom=null;
+                            let userID=users_online[i].id;
+                            let socketKicked=io.sockets.sockets.get(userID);
+                            socketKicked.leave(currentRoom);
+                            socketKicked.emit("kickSuccess",{success:true,message:"You have been kicked out of the chat."});
+                            socket.emit("success",{success:true, message:"You have successfully kicked this user out of the chat."});
+
+                        }
+                    }
+            }
+            else{
+                socket.emit("success",{success:false,message:"Only creators of the chat can kick users."});
+            }
         }
         else{
-            socket.emit("success",{success:false,message:"Only creators of the chat can kick users."});
-        }
-            
+            socket.emit("success",{success:false, message:"User is not in room. Make sure your input is case-sensitive."});
+        }  
         
     });
 
@@ -487,6 +504,7 @@ io.sockets.on("connection", function (socket) {
         let currentRoom=null;
         let creator=null;
         let bannedsocketID=null;
+        let isUserIn=null;
         //retrieve current room
         for(let i in users_online){
             if(socket.id==users_online[i].id){
@@ -499,36 +517,53 @@ io.sockets.on("connection", function (socket) {
                 creator=chatrooms[i].creator;
             }
         }
-        //check if the socket is the creator
-        if(socket.id==creator){
-            
-            for(let i in users_online){
-                //retrieve from users online array the banned user socket
-                if(data["banUser"]==users_online[i].nickname){
-                    users_online[i].inRoom=null;
-                    bannedsocketID=users_online[i].id;
-                    //have that socket leave the room
-                    let socketBanned=io.sockets.sockets.get(bannedsocketID);
-                    socketBanned.leave(currentRoom);
-                    socketBanned.emit("banSuccess",{success:true,message:"You have been banned from the chat."});
-                    socket.emit("success",{success:true, message:"You have successfully banned this user from the chat."});
-                }
-            }
-            for (let i in chatrooms){
-                //find current room in chat rooms array
-                if(chatrooms[i].roomName==currentRoom){
-                //push to the banned users array
-                chatrooms[i].bannedUsers.push(bannedsocketID);
+      
+        //check if user is in the room
+        for (let i in chatrooms) {
+            for (let j in chatrooms[i].usersInRoom){
+                if (chatrooms[i].usersInRoom[j]==data["banUser"]){
+                    isUserIn=true;
                 }
             }
             
-            console.log("Banned Users Chatrooms: ");
-            console.log(chatrooms);
         }
-        else{
-            socket.emit("success",{success:false,message:"Only creators of the chat can ban users."});
+
+        if(isUserIn==true){
+
+            //check if the socket is the creator
+            if(socket.id==creator){
+                
+                for(let i in users_online){
+                    //retrieve from users online array the banned user socket
+                    if(data["banUser"]==users_online[i].nickname){
+                        users_online[i].inRoom=null;
+                        bannedsocketID=users_online[i].id;
+                        //have that socket leave the room
+                        let socketBanned=io.sockets.sockets.get(bannedsocketID);
+                        socketBanned.leave(currentRoom);
+                        socketBanned.emit("banSuccess",{success:true,message:"You have been banned from the chat."});
+                        socket.emit("success",{success:true, message:"You have successfully banned this user from the chat."});
+                    }
+                }
+                for (let i in chatrooms){
+                    //find current room in chat rooms array
+                    if(chatrooms[i].roomName==currentRoom){
+                    //push to the banned users array
+                    chatrooms[i].bannedUsers.push(bannedsocketID);
+                    }
+                }
+                
+                console.log("Banned Users Chatrooms: ");
+                console.log(chatrooms);
+            }
+            else{
+                socket.emit("success",{success:false,message:"Only creators of the chat can ban users."});
+            }
         }
-        
+    else{
+        socket.emit("success",{success:false, message:"User is not in room. Make sure your input is case-sensitive."});
+
+    }
     });
 
     socket.on("delete",function(data){
@@ -652,7 +687,7 @@ io.sockets.on("connection", function (socket) {
 
         }
         else {
-            socket.emit("success",{success:false, message:"user is not in room"});
+            socket.emit("success",{success:false, message:"User is not in room. Make sure your input is case-sensitive."});
         }
 
         
