@@ -27,6 +27,10 @@ body {
 #roomsBar{
     margin:20px;
     padding:20px;
+    /* display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center; */
 }
 .boldedText{
     font-weight:bolder;
@@ -43,12 +47,32 @@ body {
 }
 #in-room{
     display:none;
+    flex-direction: row;
+    /* justify-content: center;
+    align-items: center; */
+    
+}
+#mainColumn {
+    /* margin:20px;
+    padding:20px; */
+    width: 500px;
+}
+#send-message {
+    vertical-align: bottom;
+}
+#rightColumn {
+    margin:20px;
+    padding:20px;
+
+}
+#room-info, #room-creator {
+    text-align: center;
 }
 #creatorOnly{
     display:none;
 }
 button{
-    border-radius: 20px;
+    border-radius: 25px;
     border-color:#92b6b1;
     background-color: #92b6b1;
     color:#4a5759;

@@ -62,7 +62,11 @@
     socketio.on("in_chatroom", function (data) {
       console.log("Creator: " + data["creator"] + " Room: " + data["room"]);
       document.getElementById("room-creator").innerText = "Room created by " + data["creator"];
-      document.getElementById("room-name").innerText = "Chat Room: " + data["room"];
+      document.getElementById("room-info").innerHTML=" ";
+      let roomName = document.createElement("h1");
+      roomName.innerText = "Chat Room: " + data["room"];
+      roomName.id="room-name";
+      document.getElementById("room-info").prepend(roomName);
       showRoomInfo();
     });
 
@@ -174,7 +178,7 @@
         //show chatroom details 
         showRoomInfo();
         document.getElementById("chatroom_name").value = "";
-        document.getElementById("in-room").style.display = "block";
+        document.getElementById("in-room").style.display = "flex";
         document.getElementById("chatlog").innerText = "";
 
 
@@ -201,7 +205,7 @@
         //socketio.emit("show_room_info",{room_name: roomName});
         document.getElementById("private_name").value = "";
         document.getElementById("private_password").value = "";
-        document.getElementById("in-room").style.display = "block";
+        document.getElementById("in-room").style.display = "flex";
         document.getElementById("chatlog").innerText = "";
 
       }
@@ -219,20 +223,19 @@
       console.log(event.target.className);
       if (event.target.className == "private") {
         let passwordPrompt = prompt("please enter the room password");
-        
         password = passwordPrompt;
 
       }
       console.log(password);
 
-      if (password!=null){
+      if (password != null) {
         socketio.emit("joined_room", { room_name: event.target.id, room_password: password });
         socketio.emit("update_room_users");
         socketio.emit("checkRoomsEmpty");
         // socketio.emit("checkPrivileges");
         //showRoomInfo(); 
       }
-   
+
     }
 
 
@@ -240,7 +243,7 @@
     //SHOW room name and creator/owner
     function showRoomInfo() {
       console.log("Inside show room info");
-      document.getElementById("in-room").style.display = "block";
+      document.getElementById("in-room").style.display = "flex";
       document.getElementById("lobby").style.display = "none";
 
     }
@@ -387,36 +390,47 @@
   </div>
   <div id="roomsBar">
     <div id="in-room">
-      <h1 id="room-name"> </h1>
-      <p id="room-creator"></p>
-
-      <div id="chatlog">
+      <div id="mainColumn">
+        <div id="room-info">
+        <!-- <h1 id="room-name"> </h1> -->
       </div>
+        <p id="room-creator"></p>
+        
 
-      <div id="send-message">
-        <div id="send-private-message">
-
+        <div id="chatlog">
         </div>
 
-        <input type="text" id="message_input" required />
-        <button onclick="sendMessage()">Send</button>
+        <div id="send-message">
+          <div id="send-private-message">
+
+          </div>
+
+          <input type="text" id="message_input" required />
+          <button onclick="sendMessage()">Send</button>
+        </div>
       </div>
 
-      <p class="boldedText">Users in chatroom:</p>
-      <ul id="userList">
-      </ul>
-    </div>
-    <div id="creatorOnly">
-      <button onclick="deleteRoom()"> Delete Room </button>
-      <br>
-      <input type="text" id="banUser">
-      <button onclick="banUser()">Ban User </button>
-      <br>
-      <input type="text" id="kickOut">
-      <button onclick="kickOut()"> Kick Out User </button>
-      <br>
-      <input type="text" id="changeCreator">
-      <button onclick="changeCreator()">Change Creator</button>
+        <div id="rightColumn">
+          <p class="boldedText">Users in chatroom:</p>
+          <ul id="userList">
+          </ul>
+        
+
+        <div id="creatorOnly">
+          <input type="text" id="banUser">
+          <button onclick="banUser()">Ban User </button>
+          <br>
+          <input type="text" id="kickOut">
+          <button onclick="kickOut()"> Kick Out User </button>
+          <br>
+          <input type="text" id="changeCreator">
+          <button onclick="changeCreator()">Change Creator</button>
+          <br>
+          <button onclick="deleteRoom()"> Delete Room </button>
+
+        </div>
+      </div>
+      
     </div>
   </div>
   </div>
