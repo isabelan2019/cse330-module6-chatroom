@@ -636,6 +636,10 @@ io.sockets.on("connection", function (socket) {
                 let creatorID=io.sockets.sockets.get(newCreatorid);
                 creatorID.emit("creator_privileges",{isCreator:true} );
 
+                //current creater no longer has privileges displayed 
+                let oldID = io.sockets.sockets.get(currentcreator);
+                oldID.emit("creator_privileges", {isCreator:false});
+
                 //update show room info for everyone in room 
                 io.in(currentRoom).emit("in_chatroom", {room: currentRoom, creator:data["newCreator"]});
 

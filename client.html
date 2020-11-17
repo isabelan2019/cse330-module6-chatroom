@@ -229,7 +229,7 @@
         socketio.emit("joined_room", { room_name: event.target.id, room_password: password });
         socketio.emit("update_room_users");
         socketio.emit("checkRoomsEmpty");
-        socketio.emit("checkPrivileges");
+        // socketio.emit("checkPrivileges");
         //showRoomInfo(); 
       }
    
@@ -328,7 +328,7 @@
 
       }
       document.getElementById("changeCreator").value = "";
-      document.getElementById("creatorOnly").style.display = "none";
+      //document.getElementById("creatorOnly").style.display = "none";
 
     }
 
@@ -387,7 +387,7 @@
   </div>
   <div id="roomsBar">
     <div id="in-room">
-      <h1 id="room-name"></h1>
+      <h1 id="room-name"> </h1>
       <p id="room-creator"></p>
 
       <div id="chatlog">
