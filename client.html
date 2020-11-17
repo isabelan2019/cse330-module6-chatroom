@@ -176,9 +176,9 @@
         // });
         document.getElementById("chatlog").innerText = "";
         //show chatroom details 
-        showRoomInfo();
+       // showRoomInfo();
         document.getElementById("chatroom_name").value = "";
-        document.getElementById("in-room").style.display = "flex";
+       // document.getElementById("in-room").style.display = "flex";
         document.getElementById("chatlog").innerText = "";
 
 
@@ -197,15 +197,15 @@
         socketio.emit("room_name", { room_name: roomName, room_password: roomPassword });
         socketio.emit("update_room_users");
         socketio.emit("checkRoomsEmpty");
-        document.getElementById("chatlog").innerText = "";
-        showRoomInfo();
+        //document.getElementById("chatlog").innerText = "";
+        //showRoomInfo();
         // socketio.on("show_users", function (data) {
         //   showusers(data["usersArray"]);
         // });
         //socketio.emit("show_room_info",{room_name: roomName});
         document.getElementById("private_name").value = "";
         document.getElementById("private_password").value = "";
-        document.getElementById("in-room").style.display = "flex";
+        //document.getElementById("in-room").style.display = "flex";
         document.getElementById("chatlog").innerText = "";
 
       }
