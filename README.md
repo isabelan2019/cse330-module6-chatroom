@@ -11,3 +11,6 @@ CREATIVE PORTION:
 
 ADDITIONAL IMPLEMENTATION EXPLANATIONS:
 1. A user must sign in first before being able to see anything else. 
+
+
+Comments: -3pts did not pass html validation
