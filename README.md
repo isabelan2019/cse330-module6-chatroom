@@ -1,7 +1,9 @@
 # CSE330
-STUDENT ID:
-- 458267
-- 456941
+Contributors:
+- Isabel An
+- Claire Irawan
+
+About: Multi-chatroom web app that allows users to chat with others in real time. 
 
 CREATIVE PORTION:
 1. The open chat rooms are constantly monitored so if a room is empty (zero users inside), the room will be deleted and removed from the open chat room list.  
@@ -12,5 +14,3 @@ CREATIVE PORTION:
 ADDITIONAL IMPLEMENTATION EXPLANATIONS:
 1. A user must sign in first before being able to see anything else. 
 
-
-Comments: -3pts did not pass html validation
